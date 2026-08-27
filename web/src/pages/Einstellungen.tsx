@@ -1,6 +1,6 @@
 import { maxStreicher } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
-import { RegattaBanner } from "../components/RegattaBanner";
+import { PrintKopf } from "../components/PrintKopf";
 import { REGATTA_LOGOS, VERANSTALTER_LOGOS } from "../data/logos";
 import { useData } from "../state/DataContext";
 
@@ -13,11 +13,7 @@ export function Einstellungen() {
 
   return (
     <div>
-      <h1 className="titel-zentriert">Einstellungen</h1>
-
-      <div className="einstellungen-banner">
-        <RegattaBanner regatta={regatta} />
-      </div>
+      <PrintKopf regatta={regatta} seitentitel="Einstellungen" />
 
       <div className="einstellungen-grid">
         <section className="kachel">

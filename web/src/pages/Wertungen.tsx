@@ -24,6 +24,15 @@ const WERTUNGSART_LABEL: Record<Wertungsart, string> = {
   berechnet: "nach berechneter Zeit",
 };
 
+const START_TABS = [
+  { id: "startliste", label: "Startliste" },
+  { id: "zeiten", label: "Zeiterfassung" },
+  { id: "gesegelt", label: "Ergebnis gesegelt" },
+  { id: "berechnet", label: "Ergebnis berechnet" },
+] as const;
+
+type StartTabId = (typeof START_TABS)[number]["id"];
+
 function drucken(titel: string) {
   const vorher = document.title;
   document.title = titel;
@@ -54,10 +63,6 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
 
   return (
     <div>
-      <PrintKopf
-        regatta={regatta}
-        titel={`Startliste ${start.nummer}. Start: ${start.bezeichnung}`}
-      />
       {kangaroo && (
         <div className="form-grid no-print" style={{ marginBottom: "1rem" }}>
           <label>
@@ -187,8 +192,8 @@ function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }
   return (
     <div className="no-print">
       <p className="hinweis">
-        Zeiten als Ziffern eingeben: z.B. <code>154023</code> für 15:40:23 — oder an der
-        Ziellinie einfach <strong>Jetzt</strong> antippen.
+        Zeiten als Ziffern eingeben: z.B. <code>154023</code> für 15:40:23 — oder an der Ziellinie
+        einfach <strong>Jetzt</strong> antippen.
         {kangaroo && " Startzeiten kommen aus der Startliste, nur bei Abweichung überschreiben."}
       </p>
       {!kangaroo && (
@@ -281,7 +286,7 @@ function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }
                   <td>{zeile?.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
                   <td>
                     <input
-                      className="zelle zelle--zahl"
+                      className="zelle zelle--zahl zelle--mittig"
                       type="number"
                       min={0}
                       step={0.5}
@@ -296,7 +301,7 @@ function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }
                   </td>
                   <td>
                     <input
-                      className="zelle"
+                      className="zelle zelle--voll"
                       value={zeit?.bemerkung ?? ""}
                       onChange={(e) =>
                         setZeit(start.id, boot.id, { bemerkung: e.target.value || undefined })
@@ -327,11 +332,6 @@ function ErgebnisTab({
 
   return (
     <div>
-      <PrintKopf
-        regatta={regatta}
-        titel={`Ergebnisliste ${start.nummer}. Start: ${start.bezeichnung}`}
-        untertitel={`Wertung ${wertungsTitel(regatta, wertungsart)}`}
-      />
       <div className="tabelle-scroll">
         <table className="tabelle tabelle--mittig">
           <thead>
@@ -388,96 +388,21 @@ function ErgebnisTab({
   );
 }
 
-const START_TABS = [
-  { id: "startliste", label: "Startliste" },
-  { id: "zeiten", label: "Zeiterfassung" },
-  { id: "gesegelt", label: "Ergebnis gesegelt" },
-  { id: "berechnet", label: "Ergebnis berechnet" },
-] as const;
-
-type StartTabId = (typeof START_TABS)[number]["id"];
-
-function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
-  const { updateStart, removeStart } = useData();
-  const [tab, setTab] = useState<StartTabId>("zeiten");
-
-  return (
-    <div>
-      <div className="panel form-grid no-print">
-        <label>
-          Bezeichnung
-          <input
-            value={start.bezeichnung}
-            onChange={(e) => updateStart(start.id, { bezeichnung: e.target.value })}
-          />
-        </label>
-        <label className="check-label">
-          <input
-            type="checkbox"
-            checked={start.aktiv}
-            onChange={(e) => updateStart(start.id, { aktiv: e.target.checked })}
-          />
-          zählt zur Gesamtwertung
-        </label>
-        <div className="button-row">
-          <button
-            type="button"
-            className="danger"
-            onClick={() => {
-              if (window.confirm(`Start „${start.bezeichnung}“ samt Zeiten löschen?`)) {
-                removeStart(start.id);
-              }
-            }}
-          >
-            Start löschen
-          </button>
-        </div>
-      </div>
-
-      <div className="karteireiter no-print" role="tablist">
-        {START_TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            className={`karteireiter__tab${tab === t.id ? " is-active" : ""}`}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <div className="karteikarte">
-        {tab === "startliste" && <StartlisteTab regatta={regatta} start={start} />}
-        {tab === "zeiten" && <ZeiterfassungTab regatta={regatta} start={start} />}
-        {tab === "gesegelt" && <ErgebnisTab regatta={regatta} start={start} wertungsart="gesegelt" />}
-        {tab === "berechnet" && (
-          <ErgebnisTab regatta={regatta} start={start} wertungsart="berechnet" />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function GesamtPanel({ regatta }: { regatta: Regatta }) {
-  const [wertungsart, setWertungsart] = useState<Wertungsart>("gesegelt");
+function GesamtPanel({
+  regatta,
+  wertungsart,
+  onWertungsart,
+}: {
+  regatta: Regatta;
+  wertungsart: Wertungsart;
+  onWertungsart: (wert: Wertungsart) => void;
+}) {
   const kangaroo = regatta.startmodus === "kangaroo";
   const wertung = berechneGesamtwertung(regatta, wertungsart);
   const aktiveStarts = regatta.starts.filter((s) => s.aktiv).sort((a, b) => a.nummer - b.nummer);
-  const streicher = Math.min(regatta.streicher, maxStreicher(regatta));
 
   return (
     <div>
-      <PrintKopf
-        regatta={regatta}
-        titel="Gesamtwertung"
-        untertitel={`Wertung ${wertungsTitel(regatta, wertungsart)}${
-          streicher > 0
-            ? ` · ${streicher} Streichergebnis${streicher > 1 ? "se" : ""} (in Klammern)`
-            : ""
-        }`}
-      />
       {!kangaroo && (
         <div className="chip-row no-print">
           {(Object.keys(WERTUNGSART_LABEL) as Wertungsart[]).map((art) => (
@@ -485,7 +410,7 @@ function GesamtPanel({ regatta }: { regatta: Regatta }) {
               key={art}
               type="button"
               className={`chip${wertungsart === art ? " is-active" : ""}`}
-              onClick={() => setWertungsart(art)}
+              onClick={() => onWertungsart(art)}
             >
               {WERTUNGSART_LABEL[art]}
             </button>
@@ -550,16 +475,47 @@ function GesamtPanel({ regatta }: { regatta: Regatta }) {
 }
 
 export function Wertungen() {
-  const { aktiveRegatta, addStart } = useData();
+  const { aktiveRegatta, addStart, updateStart, removeStart } = useData();
   const [auswahl, setAuswahl] = useState<string>("gesamt");
+  const [tab, setTab] = useState<StartTabId>("zeiten");
+  const [wertungsart, setWertungsart] = useState<Wertungsart>("gesegelt");
   if (!aktiveRegatta) return <KeineRegatta />;
 
-  const starts = [...aktiveRegatta.starts].sort((a, b) => a.nummer - b.nummer);
-  const aktiverStart = starts.find((s) => s.id === auswahl);
+  const regatta = aktiveRegatta;
+  const starts = [...regatta.starts].sort((a, b) => a.nummer - b.nummer);
+  const start = starts.find((s) => s.id === auswahl);
+
+  // Listentitel unter der Trennlinie — richtet sich nach Auswahl und Reiter,
+  // der Kopf darüber bleibt beim Umschalten unverändert stehen.
+  let titel: string;
+  let untertitel: string | undefined;
+  if (!start) {
+    const streicher = Math.min(regatta.streicher, maxStreicher(regatta));
+    titel = "Gesamtwertung";
+    untertitel = `Wertung ${wertungsTitel(regatta, wertungsart)}${
+      streicher > 0
+        ? ` · ${streicher} Streichergebnis${streicher > 1 ? "se" : ""} (in Klammern)`
+        : ""
+    }`;
+  } else {
+    const bezug = `${start.nummer}. Start: ${start.bezeichnung}`;
+    if (tab === "startliste") titel = `Startliste ${bezug}`;
+    else if (tab === "zeiten") titel = `Zeiterfassung ${bezug}`;
+    else {
+      titel = `Ergebnisliste ${bezug}`;
+      untertitel = `Wertung ${wertungsTitel(regatta, tab === "gesegelt" ? "gesegelt" : "berechnet")}`;
+    }
+  }
 
   return (
     <div>
-      <h1 className="no-print">Wertungen</h1>
+      <PrintKopf
+        regatta={regatta}
+        seitentitel="Wertungen"
+        titel={titel}
+        untertitel={untertitel}
+      />
+
       <div className="chip-row no-print">
         <button
           type="button"
@@ -568,14 +524,14 @@ export function Wertungen() {
         >
           Gesamtwertung
         </button>
-        {starts.map((start) => (
+        {starts.map((s) => (
           <button
-            key={start.id}
+            key={s.id}
             type="button"
-            className={`chip${auswahl === start.id ? " is-active" : ""}${start.aktiv ? "" : " is-inaktiv"}`}
-            onClick={() => setAuswahl(start.id)}
+            className={`chip${auswahl === s.id ? " is-active" : ""}${s.aktiv ? "" : " is-inaktiv"}`}
+            onClick={() => setAuswahl(s.id)}
           >
-            {start.nummer}. {start.bezeichnung}
+            {s.nummer}. {s.bezeichnung}
           </button>
         ))}
         <button type="button" className="chip chip--aktion" onClick={addStart}>
@@ -583,10 +539,71 @@ export function Wertungen() {
         </button>
       </div>
 
-      {aktiverStart ? (
-        <StartPanel key={aktiverStart.id} regatta={aktiveRegatta} start={aktiverStart} />
+      {start ? (
+        <div>
+          <div className="panel form-grid no-print">
+            <label>
+              Bezeichnung
+              <input
+                value={start.bezeichnung}
+                onChange={(e) => updateStart(start.id, { bezeichnung: e.target.value })}
+              />
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={start.aktiv}
+                onChange={(e) => updateStart(start.id, { aktiv: e.target.checked })}
+              />
+              zählt zur Gesamtwertung
+            </label>
+            <div className="button-row">
+              <button
+                type="button"
+                className="danger"
+                onClick={() => {
+                  if (window.confirm(`Start „${start.bezeichnung}“ samt Zeiten löschen?`)) {
+                    setAuswahl("gesamt");
+                    removeStart(start.id);
+                  }
+                }}
+              >
+                Start löschen
+              </button>
+            </div>
+          </div>
+
+          <div className="karteireiter no-print" role="tablist">
+            {START_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === t.id}
+                className={`karteireiter__tab${tab === t.id ? " is-active" : ""}`}
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="karteikarte">
+            {tab === "startliste" && <StartlisteTab regatta={regatta} start={start} />}
+            {tab === "zeiten" && <ZeiterfassungTab regatta={regatta} start={start} />}
+            {tab === "gesegelt" && (
+              <ErgebnisTab regatta={regatta} start={start} wertungsart="gesegelt" />
+            )}
+            {tab === "berechnet" && (
+              <ErgebnisTab regatta={regatta} start={start} wertungsart="berechnet" />
+            )}
+          </div>
+        </div>
       ) : (
-        <GesamtPanel regatta={aktiveRegatta} />
+        <GesamtPanel
+          regatta={regatta}
+          wertungsart={wertungsart}
+          onWertungsart={setWertungsart}
+        />
       )}
     </div>
   );

@@ -1,13 +1,12 @@
 import type { Regatta } from "@race-manager/core";
-import { formatDatum } from "../lib/zeitHelfer";
 import { RegattaBanner } from "./RegattaBanner";
 
 /**
- * Listenkopf für Bildschirm und Druck: Banner mit Veranstalterlogo,
- * "Regatta - Jahr" und Regatta-Logo, darunter — nur am Bildschirm — der
- * Seitentitel. Unter der Trennlinie folgt zentriert der Listentitel mit
- * Datum; auf dem Ausdruck kommt der Druckzeitpunkt dazu, damit erkennbar
- * bleibt, welcher Stand auf dem Papier ist.
+ * Standard-Seitenkopf: Banner mit Veranstalterlogo, "Regatta - Jahr" und
+ * Regatta-Logo, darunter der Seitentitel — beides über der Trennlinie.
+ * Unter der Linie steht zentriert der Listentitel; beim Ausdruck kommt
+ * rechts der Druckzeitpunkt dazu, damit erkennbar bleibt, welcher Stand
+ * auf dem Papier ist.
  */
 export function PrintKopf({
   regatta,
@@ -16,7 +15,7 @@ export function PrintKopf({
   seitentitel,
 }: {
   regatta: Regatta;
-  titel: string;
+  titel?: string;
   untertitel?: string;
   seitentitel?: string;
 }) {
@@ -24,20 +23,22 @@ export function PrintKopf({
     <header className="druck-kopf">
       <div className="druck-kopf__oben">
         <RegattaBanner regatta={regatta} />
+        {/* Der Seitentitel benennt den Reiter, nicht die Liste — auf dem
+            Papier steht stattdessen der Listentitel unter der Linie. */}
         {seitentitel && <h1 className="druck-kopf__seitentitel no-print">{seitentitel}</h1>}
       </div>
-      <div className="druck-kopf__zeile">
-        <span className="druck-kopf__titel">{titel}</span>
-        {untertitel && <span className="druck-kopf__untertitel"> — {untertitel}</span>}
-        <span className="druck-kopf__meta">
-          {regatta.datum && <span> · {formatDatum(regatta.datum)}</span>}
-          <span className="print-only">
-            {" "}
-            · Stand:{" "}
+      {titel && (
+        <div className="druck-kopf__zeile">
+          <span className="druck-kopf__titel">
+            {titel}
+            {untertitel && <span className="druck-kopf__untertitel"> — {untertitel}</span>}
+          </span>
+          <span className="druck-kopf__stand print-only">
+            Stand:{" "}
             {new Date().toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
           </span>
-        </span>
-      </div>
+        </div>
+      )}
     </header>
   );
 }
