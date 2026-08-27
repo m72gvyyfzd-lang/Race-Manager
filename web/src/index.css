@@ -142,10 +142,6 @@ input[type="radio"] {
   width: 4.5rem;
 }
 
-.zelle--breit {
-  width: 12rem;
-}
-
 .time-input {
   width: 6.5rem;
   background: var(--bg);
@@ -729,13 +725,53 @@ span.druck-kopf__symbol {
 /* --- schmale, zentrierte Spalten (z.B. Verein/Meldung in der Anmeldung) --- */
 .tabelle th.spalte-schmal,
 .tabelle td.spalte-schmal {
-  width: 7rem;
+  width: 6rem;
   text-align: center;
 }
 
-.zelle--schmal {
-  width: 6rem;
+/* --- Listen mit zentrierten Kopfzeilen und einzelnen mittigen Spalten --- */
+.tabelle--kopf-mittig th {
   text-align: center;
+}
+
+.tabelle--kopf-mittig th.spalte-links {
+  text-align: left;
+}
+
+.tabelle th.spalte-mittig,
+.tabelle td.spalte-mittig {
+  text-align: center;
+}
+
+.tabelle th.spalte-nr,
+.tabelle td.spalte-nr {
+  width: 2.5rem;
+  text-align: center;
+}
+
+/* Eingabefelder füllen ihre Spalte aus (Name, Bemerkungen …); die
+   Mindestbreite hält die Inhalte lesbar — die Tabelle scrollt lieber
+   waagerecht, als Namen abzuschneiden. */
+.zelle--voll {
+  width: 100%;
+  min-width: 9rem;
+}
+
+.zelle--mittig {
+  text-align: center;
+}
+
+/* --- Teilnehmer & Orga: Dashboard links (Regatta) / rechts (Essen) --- */
+.orga-dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.orga-dashboard .stat-grid {
+  margin: 0 0 1.25rem;
 }
 
 /* --- Druck --- */
