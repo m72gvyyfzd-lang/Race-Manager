@@ -741,11 +741,14 @@ span.druck-kopf__symbol {
 /* Zwei Zeilen: links Bezeichnung über dem Wertungs-Häkchen, daneben zwei
    kontextabhängige Spalten (Massenstart bzw. Kangaroo-Angaben), rechts
    mittig der Löschen-Button. */
+/* Die Spaltenbreiten fassen auch die längste Beschriftung ("gepl.
+   Startzeit 0-Boot :") — sonst schiebt sie ihr Feld aus der Spalte und
+   die Eingaben fluchten nicht mehr. */
 .start-kachel__grid {
   display: grid;
-  grid-template-columns: 14rem 16rem 13rem 1fr;
+  grid-template-columns: 14rem 18rem 13.5rem 1fr;
   grid-template-rows: auto auto;
-  gap: 0.75rem 1.25rem;
+  gap: 0.75rem 1rem;
   align-items: end;
 }
 

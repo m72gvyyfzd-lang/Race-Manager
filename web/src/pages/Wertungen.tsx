@@ -35,6 +35,18 @@ const START_TABS = [
 
 type StartTabId = (typeof START_TABS)[number]["id"];
 
+/** Im Kangaroo-Modus gibt es keine Wertung nach berechneter Zeit —
+ *  die Vergütung steckt bereits in den Startzeiten. */
+const KANGAROO_TABS: { id: StartTabId; label: string }[] = [
+  { id: "startliste", label: "Startliste" },
+  { id: "zeiten", label: "Zeiterfassung" },
+  { id: "gesegelt", label: "Ergebnis" },
+];
+
+/** Startreihenfolge: größter Yardstick zuerst, bei Gleichstand alphabetisch. */
+const nachYardstick = (a: { yardstick: number; name: string }, b: { yardstick: number; name: string }) =>
+  b.yardstick - a.yardstick || a.name.localeCompare(b.name, "de");
+
 function drucken(titel: string) {
   const vorher = document.title;
   document.title = titel;
@@ -58,9 +70,7 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
       ? kangarooStartzeiten(regatta.boote, start.geplanteStartzeit, start.basiszeit)
       : null;
 
-  const booteSortiert = [...regatta.boote].sort((a, b) => a.name.localeCompare(b.name, "de"));
-  const eintrag = (bootId: string) =>
-    regatta.zeiten.find((z) => z.startId === start.id && z.bootId === bootId);
+  const booteSortiert = [...regatta.boote].sort(nachYardstick);
 
   return (
     <div>
@@ -92,7 +102,8 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
           </div>
         ) : (
           <p className="no-print">
-            Geplante Startzeit und kalkulierte Streckenzeit eingeben, dann erscheinen hier die
+            Oben „gepl. Startzeit 0-Boot“ und „Streckenzeit YS 100“ eintragen — letztere
+            berechnet sich auch aus Strecke und ⌀ Geschwindigkeit. Dann erscheinen hier die
             individuellen Startzeiten (langsamstes Boot zuerst).
           </p>
         )
@@ -101,25 +112,23 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
           <table className="tabelle tabelle--mittig">
             <thead>
               <tr>
-                <th>#</th>
-                <th className="spalte-links">Boot</th>
-                <th>Skipper</th>
-                <th>Yardstick</th>
-                <th>Startzeit</th>
+                <th className="spalte-nr">#</th>
+                <th className="spalte-links">Bootsname</th>
+                <th className="spalte-links">Skipper</th>
+                <th className="spalte-links">Bootstyp</th>
+                <th className="spalte-schmal">Verein</th>
+                <th className="spalte-schmal">Yardstick</th>
               </tr>
             </thead>
             <tbody>
               {booteSortiert.map((boot, index) => (
                 <tr key={boot.id}>
-                  <td>{index + 1}</td>
+                  <td className="spalte-nr">{index + 1}</td>
                   <td className="spalte-links">{boot.name}</td>
-                  <td>{boot.skipper}</td>
-                  <td>{boot.yardstick}</td>
-                  <td>
-                    {eintrag(boot.id)?.startzeit !== undefined
-                      ? formatUhrzeit(eintrag(boot.id)!.startzeit!)
-                      : "–"}
-                  </td>
+                  <td className="spalte-links">{boot.skipper}</td>
+                  <td className="spalte-links">{boot.bootstyp}</td>
+                  <td className="spalte-schmal">{boot.verein}</td>
+                  <td className="spalte-schmal">{boot.yardstick}</td>
                 </tr>
               ))}
             </tbody>
@@ -141,7 +150,7 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
 function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }) {
   const { setZeit } = useData();
   const kangaroo = regatta.startmodus === "kangaroo";
-  const boote = [...regatta.boote].sort((a, b) => a.name.localeCompare(b.name, "de"));
+  const boote = [...regatta.boote].sort(nachYardstick);
 
   const eintrag = (bootId: string) =>
     regatta.zeiten.find((z) => z.startId === start.id && z.bootId === bootId);
@@ -276,6 +285,8 @@ function ErgebnisTab({
 }) {
   const ergebnis = berechneStartErgebnis(regatta, start, wertungsart);
   const mitBemerkung = ergebnis.some((z) => z.bemerkung);
+  // Die berechnete Zeit gehört nur in die Wertung, die auf ihr beruht.
+  const mitBerechnet = wertungsart === "berechnet";
 
   return (
     <div>
@@ -284,14 +295,14 @@ function ErgebnisTab({
           <thead>
             <tr>
               <th>Platz</th>
-              <th className="spalte-links">Boot</th>
+              <th className="spalte-links">Bootsname</th>
               <th>Skipper</th>
               <th>Crew</th>
               <th>YS</th>
               <th>Start</th>
               <th>Ziel</th>
               <th>gesegelte Zeit</th>
-              <th>berechnete Zeit</th>
+              {mitBerechnet && <th>berechnete Zeit</th>}
               <th>Punkte</th>
               {mitBemerkung && <th>Bemerkung</th>}
             </tr>
@@ -307,7 +318,9 @@ function ErgebnisTab({
                 <td>{zeile.startzeit !== undefined ? formatUhrzeit(zeile.startzeit) : "–"}</td>
                 <td>{zeile.zielzeit !== undefined ? formatUhrzeit(zeile.zielzeit) : "–"}</td>
                 <td>{zeile.gesegeltSek !== undefined ? formatDauer(zeile.gesegeltSek) : "–"}</td>
-                <td>{zeile.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
+                {mitBerechnet && (
+                  <td>{zeile.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
+                )}
                 <td>
                   {zeile.punkte}
                   {zeile.punkteManuell && (
@@ -438,9 +451,14 @@ export function Wertungen() {
   const starts = [...regatta.starts].sort((a, b) => a.nummer - b.nummer);
   const start = starts.find((s) => s.id === auswahl);
 
+  // Kangaroo kennt keine Wertung nach berechneter Zeit — der Reiter entfällt,
+  // ein bereits gewählter fällt auf die Ergebnis-Ansicht zurück.
+  const startTabs = kangaroo ? KANGAROO_TABS : START_TABS;
+  const tabAktiv: StartTabId = kangaroo && tab === "berechnet" ? "gesegelt" : tab;
+
   // Die Kachel zeigt je nach Startmodus und Reiter die passenden Felder
-  const zeigeMassenstart = !!start && !kangaroo && tab === "zeiten";
-  const zeigeKangarooFelder = !!start && kangaroo && tab === "startliste";
+  const zeigeMassenstart = !!start && !kangaroo && tabAktiv === "zeiten";
+  const zeigeKangarooFelder = !!start && kangaroo && tabAktiv === "startliste";
 
   const massenstartUebernehmen = () => {
     if (!start || massenstart === undefined) return;
@@ -487,11 +505,11 @@ export function Wertungen() {
     }`;
   } else {
     const bezug = `${start.nummer}. Start: ${start.bezeichnung}`;
-    if (tab === "startliste") titel = `Startliste ${bezug}`;
-    else if (tab === "zeiten") titel = `Zeiterfassung ${bezug}`;
+    if (tabAktiv === "startliste") titel = `Startliste ${bezug}`;
+    else if (tabAktiv === "zeiten") titel = `Zeiterfassung ${bezug}`;
     else {
       titel = `Ergebnisliste ${bezug}`;
-      untertitel = `Wertung ${wertungsTitel(regatta, tab === "gesegelt" ? "gesegelt" : "berechnet")}`;
+      untertitel = `Wertung ${wertungsTitel(regatta, tabAktiv === "gesegelt" ? "gesegelt" : "berechnet")}`;
     }
   }
 
@@ -629,13 +647,13 @@ export function Wertungen() {
       {start ? (
         <div>
           <div className="karteireiter no-print" role="tablist">
-            {START_TABS.map((t) => (
+            {startTabs.map((t) => (
               <button
                 key={t.id}
                 type="button"
                 role="tab"
-                aria-selected={tab === t.id}
-                className={`karteireiter__tab${tab === t.id ? " is-active" : ""}`}
+                aria-selected={tabAktiv === t.id}
+                className={`karteireiter__tab${tabAktiv === t.id ? " is-active" : ""}`}
                 onClick={() => setTab(t.id)}
               >
                 {t.label}
@@ -643,12 +661,12 @@ export function Wertungen() {
             ))}
           </div>
           <div className="karteikarte">
-            {tab === "startliste" && <StartlisteTab regatta={regatta} start={start} />}
-            {tab === "zeiten" && <ZeiterfassungTab regatta={regatta} start={start} />}
-            {tab === "gesegelt" && (
+            {tabAktiv === "startliste" && <StartlisteTab regatta={regatta} start={start} />}
+            {tabAktiv === "zeiten" && <ZeiterfassungTab regatta={regatta} start={start} />}
+            {tabAktiv === "gesegelt" && (
               <ErgebnisTab regatta={regatta} start={start} wertungsart="gesegelt" />
             )}
-            {tab === "berechnet" && (
+            {tabAktiv === "berechnet" && (
               <ErgebnisTab regatta={regatta} start={start} wertungsart="berechnet" />
             )}
           </div>
