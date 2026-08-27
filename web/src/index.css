@@ -2,8 +2,11 @@
   --text: #2b2b2b;
   --text-h: #08060d;
   --bg: #fff;
-  --border: #e2e2e2;
-  --row-alt: #f7f9fa;
+  --border: #d9d9d9;
+  --row-alt: #f5f8fa;
+  --nav-bg: #0b3d59;
+  --akzent: #0b6aa0;
+  --gefahr: #b03030;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -15,8 +18,11 @@
     --text: #d6d6d6;
     --text-h: #f3f4f6;
     --bg: #16171d;
-    --border: #2e303a;
+    --border: #3a3d49;
     --row-alt: #1c1e26;
+    --nav-bg: #092e42;
+    --akzent: #4ea3d4;
+    --gefahr: #e07070;
   }
 }
 
@@ -29,35 +35,255 @@ body {
 }
 
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: var(--text-h);
   margin: 0 0 1rem;
 }
 
-table {
+h2 {
+  font-size: 1.1rem;
+  color: var(--text-h);
+  margin: 1.5rem 0 0.5rem;
+}
+
+section:first-of-type h2 {
+  margin-top: 0.5rem;
+}
+
+.hinweis {
+  font-size: 0.9rem;
+  opacity: 0.75;
+  margin: 0.25rem 0 0.75rem;
+}
+
+code {
+  background: var(--row-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 0.3em;
+}
+
+/* --- Tabellen --- */
+.tabelle-scroll {
+  overflow-x: auto;
+}
+
+.tabelle {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.95rem;
 }
 
-th,
-td {
+.tabelle th,
+.tabelle td {
   text-align: left;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.6rem;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
-tbody tr:nth-child(even) {
+.tabelle tbody tr:nth-child(even) {
   background: var(--row-alt);
 }
 
+.tabelle .mittig {
+  text-align: center;
+}
+
+.status-hinweis {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* --- Formulare & Eingaben --- */
+input,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.zelle {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.25rem 0.35rem;
+  width: 9rem;
+}
+
+.zelle:hover,
+.zelle:focus {
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+.zelle--zahl {
+  width: 4.5rem;
+}
+
+.zelle--breit {
+  width: 12rem;
+}
+
+.time-input {
+  width: 6.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-input.is-invalid {
+  border-color: var(--gefahr);
+  color: var(--gefahr);
+}
+
+button {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--akzent);
+}
+
+button.primary {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: #fff;
+}
+
+button.danger {
+  color: var(--gefahr);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+}
+
+.panel h2 {
+  margin-top: 0;
+}
+
+.form-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: flex-end;
+}
+
+.form-grid label,
+section.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+section.panel input[type="number"] {
+  max-width: 8rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.check-label,
+.form-grid label.check-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+}
+
+.radio-label {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0.6rem !important;
+  align-items: flex-start !important;
+  max-width: 42rem;
+  margin: 0.5rem 0;
+  font-size: 0.95rem !important;
+}
+
+.radio-label input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+/* --- Chips (Start-Auswahl, Wertungsart) --- */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.chip {
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+}
+
+.chip.is-active {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: #fff;
+}
+
+.chip.is-inaktiv:not(.is-active) {
+  opacity: 0.55;
+}
+
+.chip--aktion {
+  border-style: dashed;
+}
+
+/* --- Statistiken --- */
 .stat-grid {
   display: flex;
-  gap: 2rem;
-  margin: 1.5rem 0 0;
+  gap: 1.5rem;
+  margin: 0 0 1.25rem;
 }
 
 .stat-grid__item {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   min-width: 8rem;
@@ -69,8 +295,113 @@ tbody tr:nth-child(even) {
 }
 
 .stat-grid__item dd {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin: 0.25rem 0 0;
+  margin: 0.15rem 0 0;
   color: var(--text-h);
+}
+
+/* --- Regatta-Karten --- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.regatta-card {
+  position: relative;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+}
+
+.regatta-card.is-active {
+  border-color: var(--akzent);
+}
+
+.regatta-card__symbol {
+  font-size: 2rem;
+}
+
+.regatta-card__name {
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0.35rem 0 0.15rem;
+}
+
+.regatta-card__meta {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.regatta-card__badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--akzent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.6rem;
+}
+
+.regatta-card .button-row {
+  margin-bottom: 0;
+}
+
+.symbol-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.symbol-btn {
+  font-size: 1.3rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.symbol-btn.is-active {
+  border-color: var(--akzent);
+  background: var(--row-alt);
+}
+
+/* --- Druck --- */
+.print-untertitel {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  :root {
+    color: #000;
+    background: #fff;
+  }
+
+  .app-sidebar {
+    display: none;
+  }
+
+  .print-header h1,
+  .print-header h2 {
+    margin-top: 0;
+  }
+
+  .tabelle th,
+  .tabelle td {
+    border-bottom: 1px solid #999;
+  }
+
+  .zelle {
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: auto;
+  }
 }

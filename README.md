@@ -1,7 +1,9 @@
 # Race Manager
 
-Web-App zur Verwaltung von Segelregatten: Boote, Wettfahrten und die
-Wertung (Ergebnisliste) einer Regattaserie.
+Web-App zur Verwaltung von Yardstick-Segelregatten: Teilnehmer & Orga,
+Zeiterfassung je Start, Wertung nach gesegelter und berechneter Zeit sowie
+Gesamtwertung mit Streichergebnissen. Ersetzt das bisherige Excel-Tool
+(Vorlage: Helgoland Double 2025).
 
 ## Live
 
@@ -9,22 +11,41 @@ https://m72gvyyfzd-lang.github.io/Race-Manager/ (aktueller Stand von `main`,
 automatisch deployed über `.github/workflows/deploy-pages.yml`)
 
 **Einmalige Einrichtung** (falls die Seite 404 zeigt): GitHub Pages muss im
-Repo einmal manuell aktiviert werden — der Workflow kann das nicht selbst,
-das GITHUB_TOKEN hat dafür keine Berechtigung. Unter *Settings → Pages →
-Build and deployment → Source* auf **"GitHub Actions"** stellen, danach
-läuft jeder weitere Deploy automatisch.
+Repo einmal manuell aktiviert werden — unter *Settings → Pages → Build and
+deployment → Source* auf **"GitHub Actions"** stellen.
+
+## Funktionsumfang
+
+- **Regatten**: mehrere Regatten mit Name + Symbol, Export/Import als
+  JSON-Datei (Datenaustausch zwischen Geräten), Beispiel-Regatta mit den
+  echten Daten der Helgoland Double 2025
+- **Teilnehmer & Orga**: Meldeliste mit Yardstick, Meldung/Meldegeld,
+  Essen-Zählern
+- **Wertungen**: beliebig viele Starts, Zeiterfassung mit
+  Ziffern-Schnelleingabe (`154023` → 15:40:23), Sonderstatus
+  DNC/DNS/DSQ/DNF (Punkte = gemeldete Boote + 1), Ergebnislisten je Start
+  nach gesegelter und berechneter Zeit, Gesamtwertung mit Streichern
+  (Gleichstand nach RRS Anhang A8), Drucken/PDF über den Browserdruck
+- **Startmodus**: normaler Massenstart oder Kangaroo-Start
+  (Verfolgungsstart — individuelle Startzeiten aus Streckenzeit und
+  Yardstick, das langsamste Boot startet zuerst, Zieleinlauf = Platzierung)
+- Daten liegen lokal im Browser (localStorage); Weitergabe per Export/Import
 
 ## Projektstruktur
 
-- [`web/`](web) — React + Vite PWA, das App-Grundgerüst. Navigations-Shell
-  mit Dashboard, Bootsliste, Wettfahrten und Ergebnissen. An `core/`
-  angebunden über npm-Workspaces — aktuell noch mit frei erfundenen
-  Platzhalterdaten statt einer echten Datenquelle.
-- [`core/`](core) — framework-unabhängige TypeScript-Kernlogik
-  (Wertungsberechnung nach dem Low-Point-System).
+- [`web/`](web) — React + Vite PWA mit Kachel-Navigation (Teilnehmer & Orga,
+  Einstellungen, Regatten, Wertungen). An `core/` angebunden über
+  npm-Workspaces.
+- [`core/`](core) — framework-unabhängige TypeScript-Kernlogik: Zeitparser,
+  gesegelte/berechnete Zeit (Sekunden × 100 / Yardstick), Kangaroo-Startzeiten,
+  Wettfahrts- und Gesamtwertung. Die Tests nutzen die echten Zahlen aus dem
+  Excel-Tool der Helgoland Double 2025 als Abnahme-Fixtures.
 
-## Status
+## Entwicklung
 
-Frühe Konzept-/Testphase. Grundgerüst und Wertungslogik stehen und sind
-miteinander verdrahtet; es fehlt noch die echte Boots-/Wertungsliste
-(bislang als Excel geführt) statt der Platzhalterdaten.
+```
+npm install
+npm test -w core       # Kernlogik-Tests
+npm run dev -w web     # Dev-Server
+npm run build -w web   # Produktions-Build
+```

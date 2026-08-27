@@ -1,33 +1,46 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import { useData } from "../state/DataContext";
 import "./AppShell.css";
 
 const NAV_ITEMS = [
-  { to: "/", label: "Dashboard", end: true },
-  { to: "/boote", label: "Boote" },
-  { to: "/wettfahrten", label: "Wettfahrten" },
-  { to: "/ergebnisse", label: "Ergebnisse" },
+  { to: "/teilnehmer", symbol: "👥", label: "Teilnehmer & Orga" },
+  { to: "/einstellungen", symbol: "⚙️", label: "Einstellungen" },
+  { to: "/regatten", symbol: "🏆", label: "Regatten" },
+  { to: "/wertungen", symbol: "🏁", label: "Wertungen" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { aktiveRegatta } = useData();
+
   return (
     <div className="app-shell">
-      <header className="app-shell__topbar">
-        <span className="app-shell__title">Race Manager</span>
-        <nav className="app-shell__nav">
+      <aside className="app-sidebar no-print">
+        <div className="app-sidebar__brand">Race Manager</div>
+        <nav className="app-sidebar__nav">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end}
-              className={({ isActive }) => (isActive ? "app-shell__link is-active" : "app-shell__link")}
+              className={({ isActive }) => (isActive ? "nav-tile is-active" : "nav-tile")}
             >
-              {item.label}
+              <span className="nav-tile__symbol" aria-hidden>
+                {item.symbol}
+              </span>
+              <span className="nav-tile__label">{item.label}</span>
             </NavLink>
           ))}
         </nav>
-      </header>
-      <main className="app-shell__content">{children}</main>
+        {aktiveRegatta && (
+          <div className="app-sidebar__regatta" title="Aktive Regatta">
+            <span className="app-sidebar__regatta-symbol">{aktiveRegatta.symbol}</span>
+            <span className="app-sidebar__regatta-name">
+              {aktiveRegatta.name} {aktiveRegatta.jahr}
+            </span>
+          </div>
+        )}
+      </aside>
+      <main className="app-content">{children}</main>
     </div>
   );
 }

@@ -1,41 +1,68 @@
-/** Domänentypen der Regattaverwaltung. */
+/**
+ * Domänentypen der Regattaverwaltung.
+ * Datenmodell destilliert aus dem bisherigen Excel-Tool
+ * (Helgoland_Double_2025: ArbeitsListe + Ergebnisblätter).
+ */
 
-export interface Yacht {
+/** Sonderstatus statt Zielzeit — wertet nach RRS mit "gemeldete Boote + 1" Punkten. */
+export type Sonderstatus = "DNC" | "DNS" | "DSQ" | "DNF";
+
+export type Startmodus = "normal" | "kangaroo";
+
+export type Wertungsart = "gesegelt" | "berechnet";
+
+export interface Boot {
   id: string;
-  segelnummer: string;
   name: string;
-  klasse: string;
   skipper: string;
+  crew: string;
+  verein: string;
+  bootstyp: string;
+  yardstick: number;
+  /** Orga: Meldung eingegangen */
+  meldungErhalten: boolean;
+  /** Orga: Meldegeld bezahlt */
+  meldegeldBezahlt: boolean;
+  /** Orga: Anzahl bestellter Essen */
+  anzahlEssen: number;
+  /** Orga: Essen bezahlt */
+  essenBezahlt: boolean;
+  bemerkung?: string;
 }
 
-export interface Wettfahrt {
+export interface Start {
   id: string;
   nummer: number;
   bezeichnung: string;
+  /** Zählt zur Gesamtwertung ("aktiv" / "nicht gewertet" im Excel) */
+  aktiv: boolean;
+  /** Kangaroo: geplante Startzeit des ersten (langsamsten) Boots, Sek. seit Mitternacht */
+  geplanteStartzeit?: number;
+  /** Kangaroo: kalkulierte Streckenzeit eines Yardstick-100-Boots in Sekunden */
+  basiszeit?: number;
+}
+
+/** Erfasste Zeiten eines Boots in einem Start. Alle Zeiten in Sek. seit Mitternacht. */
+export interface Zeiteintrag {
+  startId: string;
+  bootId: string;
+  startzeit?: number;
+  zielzeit?: number;
+  status?: Sonderstatus;
+}
+
+export interface Regatta {
+  id: string;
+  name: string;
+  /** Anzeige-Symbol (Emoji) für Listen und Kacheln */
+  symbol: string;
+  jahr: number;
   /** ISO-Datum (YYYY-MM-DD) */
-  datum: string;
-}
-
-/** Status einer Yacht in einer Wettfahrt, wenn sie nicht regulär platziert wurde. */
-export type Platzierungsstatus = "DNF" | "DNS" | "DSQ" | "OCS" | "RET" | "DNC";
-
-export interface Platzierung {
-  wettfahrtId: string;
-  yachtId: string;
-  /** Zielplatz bei regulärer Durchfahrt. */
-  platz?: number;
-  /** Gesetzt statt `platz`, wenn die Yacht nicht regulär im Ziel war. */
-  status?: Platzierungsstatus;
-}
-
-export interface Wertungszeile {
-  yachtId: string;
-  /** Punkte je Wettfahrt (vor Streichung), nur für gemeldete Wettfahrten. */
-  punkteProWettfahrt: Record<string, number>;
-  /** IDs der gestrichenen (schlechtesten) Wettfahrten. */
-  gestrichen: string[];
-  /** Punktsumme nach Streichung — niedriger ist besser. */
-  gesamtpunkte: number;
-  /** Gesamtplatzierung in der Serie, 1 = Sieger. */
-  platz: number;
+  datum?: string;
+  startmodus: Startmodus;
+  /** Gewünschte Anzahl Streichergebnisse (wirksam max. aktive Starts − 2) */
+  streicher: number;
+  boote: Boot[];
+  starts: Start[];
+  zeiten: Zeiteintrag[];
 }
