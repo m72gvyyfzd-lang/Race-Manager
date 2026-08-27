@@ -9,6 +9,8 @@ interface DataApi {
   neueRegatta: (regatta: Regatta) => void;
   /** Import: ersetzt eine vorhandene Regatta mit gleicher id, sonst neu */
   importiereRegatta: (regatta: Regatta) => void;
+  /** Mehrere Regatten importieren (Komplett-Backup) */
+  importiereRegatten: (regatten: Regatta[]) => void;
   loescheRegatta: (id: string) => void;
   updateRegatta: (id: string, patch: Partial<Regatta>) => void;
   addBoot: () => void;
@@ -61,6 +63,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
           : [...s.regatten, regatta],
         aktiveRegattaId: regatta.id,
       })),
+
+    importiereRegatten: (neue) =>
+      setState((s) => {
+        let regatten = s.regatten;
+        for (const regatta of neue) {
+          regatten = regatten.some((r) => r.id === regatta.id)
+            ? regatten.map((r) => (r.id === regatta.id ? regatta : r))
+            : [...regatten, regatta];
+        }
+        return { regatten, aktiveRegattaId: neue[0]?.id ?? s.aktiveRegattaId };
+      }),
 
     loescheRegatta: (id) =>
       setState((s) => ({
@@ -134,7 +147,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const bisher = r.zeiten.find((z) => z.startId === startId && z.bootId === bootId);
         const neu: Zeiteintrag = { startId, bootId, ...bisher, ...patch };
         const rest = r.zeiten.filter((z) => !(z.startId === startId && z.bootId === bootId));
-        const leer = neu.startzeit === undefined && neu.zielzeit === undefined && !neu.status;
+        const leer =
+          neu.startzeit === undefined &&
+          neu.zielzeit === undefined &&
+          !neu.status &&
+          neu.punkteManuell === undefined &&
+          !neu.bemerkung;
         return { ...r, zeiten: leer ? rest : [...rest, neu] };
       }),
   };

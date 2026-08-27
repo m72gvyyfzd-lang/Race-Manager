@@ -56,6 +56,11 @@ section:first-of-type h2 {
   margin: 0.25rem 0 0.75rem;
 }
 
+.hinweis--warnung {
+  color: var(--gefahr);
+  opacity: 1;
+}
+
 code {
   background: var(--row-alt);
   border: 1px solid var(--border);
@@ -367,30 +372,98 @@ section.panel input[type="number"] {
   background: var(--row-alt);
 }
 
-/* --- Druck --- */
-.print-untertitel {
-  margin: 0 0 0.75rem;
+/* --- Ziellinie & Massenstart --- */
+.ziel-zelle {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.stempel-btn {
+  padding: 0.35rem 0.7rem;
+  border-color: var(--akzent);
+  color: var(--akzent);
+  font-weight: 600;
+}
+
+.massenstart {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+/* --- Listenkopf (Bildschirm & Druck) --- */
+.druck-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  border-bottom: 2px solid var(--text-h);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.druck-kopf__titel {
+  margin: 0;
+}
+
+.druck-kopf__untertitel {
+  margin: 0.2rem 0 0;
   font-size: 0.9rem;
   opacity: 0.8;
 }
 
+.druck-kopf__meta {
+  text-align: right;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.druck-kopf__regatta {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.print-only {
+  display: none;
+}
+
+/* --- Druck --- */
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
   .no-print {
     display: none !important;
+  }
+
+  .print-only {
+    display: block;
   }
 
   :root {
     color: #000;
     background: #fff;
+    font-size: 11pt;
   }
 
   .app-sidebar {
     display: none;
   }
 
-  .print-header h1,
-  .print-header h2 {
-    margin-top: 0;
+  .druck-kopf {
+    border-bottom-color: #000;
+  }
+
+  .tabelle {
+    font-size: 10pt;
   }
 
   .tabelle th,
@@ -398,10 +471,26 @@ section.panel input[type="number"] {
     border-bottom: 1px solid #999;
   }
 
+  .tabelle thead {
+    display: table-header-group;
+  }
+
+  .tabelle tr {
+    break-inside: avoid;
+  }
+
+  .tabelle tbody tr:nth-child(even) {
+    background: #f0f0f0;
+  }
+
   .zelle {
     border: none;
     background: transparent;
     padding: 0;
     width: auto;
+  }
+
+  .tabelle-scroll {
+    overflow: visible;
   }
 }

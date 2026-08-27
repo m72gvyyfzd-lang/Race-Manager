@@ -15,6 +15,10 @@ export interface ErgebnisZeile {
   platz?: number;
   /** Low-Point: Platz, bzw. gemeldete Boote + 1 bei Sonderstatus (RRS A5) */
   punkte: number;
+  /** true, wenn die Punkte manuell von der Wettfahrtleitung vergeben wurden */
+  punkteManuell?: boolean;
+  /** Bemerkung der Wettfahrtleitung aus dem Zeiteintrag */
+  bemerkung?: string;
 }
 
 function eintragFuer(regatta: Regatta, start: Start, bootId: string): Zeiteintrag | undefined {
@@ -61,7 +65,13 @@ export function berechneStartErgebnis(
     const eintrag = eintragFuer(regatta, start, boot.id);
     const startzeit = effektiveStartzeit(regatta, start, boot.id);
     const zielzeit = eintrag?.zielzeit;
-    const zeile: ErgebnisZeile = { boot, startzeit, zielzeit, punkte: 0 };
+    const zeile: ErgebnisZeile = {
+      boot,
+      startzeit,
+      zielzeit,
+      punkte: 0,
+      bemerkung: eintrag?.bemerkung,
+    };
 
     if (eintrag?.status) {
       zeile.status = eintrag.status;
@@ -96,6 +106,15 @@ export function berechneStartErgebnis(
   });
   for (const zeile of rest) {
     zeile.punkte = regatta.boote.length + 1;
+  }
+
+  // Manuelle Punktvergabe der Wettfahrtleitung sticht die Berechnung
+  for (const zeile of [...gewertet, ...rest]) {
+    const eintrag = eintragFuer(regatta, start, zeile.boot.id);
+    if (eintrag?.punkteManuell !== undefined) {
+      zeile.punkte = eintrag.punkteManuell;
+      zeile.punkteManuell = true;
+    }
   }
 
   return [...gewertet, ...rest];

@@ -5,7 +5,7 @@
  */
 
 /** Sonderstatus statt Zielzeit — wertet nach RRS mit "gemeldete Boote + 1" Punkten. */
-export type Sonderstatus = "DNC" | "DNS" | "DSQ" | "DNF";
+export type Sonderstatus = "DNC" | "DNS" | "DSQ" | "DNF" | "RET" | "OCS";
 
 export type Startmodus = "normal" | "kangaroo";
 
@@ -49,6 +49,10 @@ export interface Zeiteintrag {
   startzeit?: number;
   zielzeit?: number;
   status?: Sonderstatus;
+  /** Manuelle Punktvergabe der Wettfahrtleitung — überschreibt die berechneten Punkte */
+  punkteManuell?: number;
+  /** Bemerkung der Wettfahrtleitung, erscheint in der Ergebnisliste */
+  bemerkung?: string;
 }
 
 export interface Regatta {

@@ -12,10 +12,12 @@ import {
   type Wertungsart,
 } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
+import { PrintKopf } from "../components/PrintKopf";
 import { TimeInput } from "../components/TimeInput";
+import { jetztSekunden } from "../lib/zeitHelfer";
 import { useData } from "../state/DataContext";
 
-const STATUS_OPTIONEN: Sonderstatus[] = ["DNC", "DNS", "DSQ", "DNF"];
+const STATUS_OPTIONEN: Sonderstatus[] = ["DNC", "DNS", "DSQ", "DNF", "RET", "OCS"];
 
 const WERTUNGSART_LABEL: Record<Wertungsart, string> = {
   gesegelt: "nach gesegelter Zeit",
@@ -57,8 +59,26 @@ function WertungsartTabs({
 function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
   const { updateStart, removeStart, setZeit } = useData();
   const [wertungsart, setWertungsart] = useState<Wertungsart>("gesegelt");
+  const [massenstart, setMassenstart] = useState<number | undefined>(undefined);
   const kangaroo = regatta.startmodus === "kangaroo";
   const boote = [...regatta.boote].sort((a, b) => a.name.localeCompare(b.name, "de"));
+
+  const massenstartUebernehmen = () => {
+    if (massenstart === undefined) return;
+    const abweichend = boote.some((b) => {
+      const s = regatta.zeiten.find((z) => z.startId === start.id && z.bootId === b.id)?.startzeit;
+      return s !== undefined && s !== massenstart;
+    });
+    if (
+      abweichend &&
+      !window.confirm("Einzelne Boote haben bereits abweichende Startzeiten — alle überschreiben?")
+    ) {
+      return;
+    }
+    for (const boot of boote) {
+      setZeit(start.id, boot.id, { startzeit: massenstart });
+    }
+  };
 
   const eintrag = (bootId: string) =>
     regatta.zeiten.find((z) => z.startId === start.id && z.bootId === bootId);
@@ -163,9 +183,27 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
       <section className="no-print">
         <h2>Zeiterfassung</h2>
         <p className="hinweis">
-          Zeiten als Ziffern eingeben: z.B. <code>154023</code> für 15:40:23.
+          Zeiten als Ziffern eingeben: z.B. <code>154023</code> für 15:40:23 — oder an der
+          Ziellinie einfach <strong>Jetzt</strong> antippen.
           {kangaroo && " Startzeiten kommen aus der Startliste, nur bei Abweichung überschreiben."}
         </p>
+        {!kangaroo && (
+          <div className="massenstart no-print">
+            <span>Startzeit für alle:</span>
+            <TimeInput wert={massenstart} onWert={setMassenstart} />
+            <button type="button" onClick={() => setMassenstart(jetztSekunden())}>
+              Jetzt
+            </button>
+            <button
+              type="button"
+              className="primary"
+              disabled={massenstart === undefined}
+              onClick={massenstartUebernehmen}
+            >
+              Für alle übernehmen
+            </button>
+          </div>
+        )}
         <div className="tabelle-scroll">
           <table className="tabelle">
             <thead>
@@ -175,8 +213,12 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
                 <th>Startzeit</th>
                 <th>Zielzeit</th>
                 <th>Status</th>
-                <th>gesegelte Zeit</th>
-                <th>berechnete Zeit</th>
+                <th>gesegelt</th>
+                <th>berechnet</th>
+                <th title="Manuelle Punktvergabe der Wettfahrtleitung — überschreibt die Berechnung">
+                  Punkte man.
+                </th>
+                <th>Bemerkung</th>
               </tr>
             </thead>
             <tbody>
@@ -201,10 +243,20 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
                       />
                     </td>
                     <td>
-                      <TimeInput
-                        wert={zeit?.zielzeit}
-                        onWert={(wert) => setZeit(start.id, boot.id, { zielzeit: wert })}
-                      />
+                      <div className="ziel-zelle">
+                        <TimeInput
+                          wert={zeit?.zielzeit}
+                          onWert={(wert) => setZeit(start.id, boot.id, { zielzeit: wert })}
+                        />
+                        <button
+                          type="button"
+                          className="stempel-btn"
+                          title="Zielzeit auf jetzt stempeln"
+                          onClick={() => setZeit(start.id, boot.id, { zielzeit: jetztSekunden() })}
+                        >
+                          Jetzt
+                        </button>
+                      </div>
                     </td>
                     <td>
                       <select
@@ -227,6 +279,30 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
                     <td>
                       {zeile?.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}
                     </td>
+                    <td>
+                      <input
+                        className="zelle zelle--zahl"
+                        type="number"
+                        min={0}
+                        step={0.5}
+                        value={zeit?.punkteManuell ?? ""}
+                        onChange={(e) =>
+                          setZeit(start.id, boot.id, {
+                            punkteManuell:
+                              e.target.value === "" ? undefined : Number(e.target.value),
+                          })
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="zelle"
+                        value={zeit?.bemerkung ?? ""}
+                        onChange={(e) =>
+                          setZeit(start.id, boot.id, { bemerkung: e.target.value || undefined })
+                        }
+                      />
+                    </td>
                   </tr>
                 );
               })}
@@ -236,14 +312,11 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
       </section>
 
       <section>
-        <div className="print-header">
-          <h2>
-            Ergebnis {start.bezeichnung} — {wertungsTitel}
-          </h2>
-          <p className="print-untertitel">
-            {regatta.symbol} {regatta.name} {regatta.jahr}
-          </p>
-        </div>
+        <PrintKopf
+          regatta={regatta}
+          titel={`Ergebnisliste ${start.nummer}. Start: ${start.bezeichnung}`}
+          untertitel={`Wertung ${wertungsTitel}`}
+        />
         {!kangaroo && <WertungsartTabs wert={wertungsart} onWert={setWertungsart} />}
         <div className="tabelle-scroll">
           <table className="tabelle">
@@ -259,6 +332,7 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
                 <th>gesegelte Zeit</th>
                 <th>berechnete Zeit</th>
                 <th>Punkte</th>
+                {ergebnis.some((z) => z.bemerkung) && <th>Bemerkung</th>}
               </tr>
             </thead>
             <tbody>
@@ -273,12 +347,21 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
                   <td>{zeile.zielzeit !== undefined ? formatUhrzeit(zeile.zielzeit) : "–"}</td>
                   <td>{zeile.gesegeltSek !== undefined ? formatDauer(zeile.gesegeltSek) : "–"}</td>
                   <td>{zeile.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
-                  <td>{zeile.punkte}</td>
+                  <td>
+                    {zeile.punkte}
+                    {zeile.punkteManuell && (
+                      <span title="Punkte manuell von der Wettfahrtleitung vergeben"> *</span>
+                    )}
+                  </td>
+                  {ergebnis.some((z) => z.bemerkung) && <td>{zeile.bemerkung ?? ""}</td>}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        {ergebnis.some((z) => z.punkteManuell) && (
+          <p className="hinweis">* Punkte manuell von der Wettfahrtleitung vergeben</p>
+        )}
         <div className="button-row no-print">
           <button
             type="button"
@@ -304,13 +387,15 @@ function GesamtPanel({ regatta }: { regatta: Regatta }) {
 
   return (
     <div>
-      <div className="print-header">
-        <h2>Gesamtwertung — {wertungsTitel}</h2>
-        <p className="print-untertitel">
-          {regatta.symbol} {regatta.name} {regatta.jahr}
-          {streicher > 0 && ` · ${streicher} Streichergebnis${streicher > 1 ? "se" : ""} (in Klammern)`}
-        </p>
-      </div>
+      <PrintKopf
+        regatta={regatta}
+        titel="Gesamtwertung"
+        untertitel={`Wertung ${wertungsTitel}${
+          streicher > 0
+            ? ` · ${streicher} Streichergebnis${streicher > 1 ? "se" : ""} (in Klammern)`
+            : ""
+        }`}
+      />
       {!kangaroo && <WertungsartTabs wert={wertungsart} onWert={setWertungsart} />}
       {aktiveStarts.length === 0 ? (
         <p>Noch kein Start zählt zur Gesamtwertung.</p>

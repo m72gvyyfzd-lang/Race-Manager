@@ -96,6 +96,32 @@ describe("berechneStartErgebnis — Sonderfälle", () => {
     expect(ergebnis[2].platz).toBe(3);
   });
 
+  it("wertet auch RET und OCS mit 'gemeldete Boote + 1' Punkten", () => {
+    const regatta = structuredClone(helgoland2025);
+    regatta.zeiten.find((z) => z.startId === "s1" && z.bootId === "maxime")!.status = "OCS";
+    regatta.zeiten.find((z) => z.startId === "s1" && z.bootId === "eska")!.status = "RET";
+
+    const ergebnis = berechneStartErgebnis(regatta, regatta.starts[0], "gesegelt");
+    expect(ergebnis.find((z) => z.boot.name === "MAXIME")!.punkte).toBe(8);
+    expect(ergebnis.find((z) => z.boot.name === "ESKA")!.punkte).toBe(8);
+  });
+
+  it("lässt manuelle Punktvergabe die Berechnung überschreiben", () => {
+    const regatta = structuredClone(helgoland2025);
+    const eintrag = regatta.zeiten.find((z) => z.startId === "s1" && z.bootId === "grandcru")!;
+    eintrag.punkteManuell = 3.5; // z.B. Wiedergutmachung nach RRS 62
+    eintrag.bemerkung = "Wiedergutmachung";
+
+    const ergebnis = berechneStartErgebnis(regatta, regatta.starts[0], "gesegelt");
+    const grandcru = ergebnis.find((z) => z.boot.name === "GRAND CRU")!;
+    expect(grandcru.punkte).toBe(3.5);
+    expect(grandcru.punkteManuell).toBe(true);
+    expect(grandcru.bemerkung).toBe("Wiedergutmachung");
+    expect(grandcru.platz).toBe(1); // Platzierung nach Zeit bleibt
+    // andere Boote unverändert
+    expect(ergebnis.find((z) => z.boot.name === "MAXIME")!.punkte).toBe(2);
+  });
+
   it("rechnet Läufe über Mitternacht korrekt", () => {
     const regatta = structuredClone(helgoland2025);
     const eintrag = regatta.zeiten.find((z) => z.startId === "s1" && z.bootId === "allin")!;

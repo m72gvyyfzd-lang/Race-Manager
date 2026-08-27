@@ -2,12 +2,25 @@ import { useRef, useState } from "react";
 import type { Regatta } from "@race-manager/core";
 import { beispielRegatta } from "../data/beispiel";
 import { SYMBOLE } from "../data/symbole";
-import { exportiereRegatta, parseImport } from "../lib/exportImport";
+import {
+  backupIstVeraltet,
+  exportiereAlle,
+  exportiereRegatta,
+  letztesBackup,
+  parseImport,
+} from "../lib/exportImport";
 import { useData } from "../state/DataContext";
 
 export function Regatten() {
-  const { regatten, aktiveRegatta, setAktiveRegattaId, neueRegatta, importiereRegatta, loescheRegatta } =
-    useData();
+  const {
+    regatten,
+    aktiveRegatta,
+    setAktiveRegattaId,
+    neueRegatta,
+    importiereRegatta,
+    importiereRegatten,
+    loescheRegatta,
+  } = useData();
   const [formOffen, setFormOffen] = useState(false);
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState(SYMBOLE[0]);
@@ -36,18 +49,28 @@ export function Regatten() {
 
   const importieren = async (datei: File) => {
     try {
-      const regatta = parseImport(await datei.text());
-      if (
-        regatten.some((r) => r.id === regatta.id) &&
-        !window.confirm(`„${regatta.name}“ existiert bereits — beim Import überschreiben?`)
-      ) {
-        return;
-      }
-      importiereRegatta(regatta);
+      const importListe = parseImport(await datei.text());
+      // Vorschau: was steckt in der Datei, was würde ersetzt?
+      const zeilen = importListe.map((r) => {
+        const vorhanden = regatten.some((x) => x.id === r.id);
+        return `• ${r.name} ${r.jahr} — ${r.boote.length} Boote, ${r.starts.length} Starts${
+          vorhanden ? " (ersetzt vorhandene Regatta!)" : " (neu)"
+        }`;
+      });
+      const ok = window.confirm(
+        `Diese Datei enthält:\n\n${zeilen.join("\n")}\n\nImportieren?`,
+      );
+      if (!ok) return;
+      importiereRegatten(importListe);
     } catch (fehler) {
       window.alert(fehler instanceof Error ? fehler.message : "Import fehlgeschlagen.");
     }
   };
+
+  // backupTick erzwingt nach einem Export das Neu-Lesen des Backup-Zeitpunkts
+  const [, setBackupTick] = useState(0);
+  const backup = letztesBackup();
+  const backupVeraltet = backupIstVeraltet();
 
   return (
     <div>
@@ -60,6 +83,17 @@ export function Regatten() {
         <button type="button" onClick={() => dateiInput.current?.click()}>
           Importieren…
         </button>
+        {regatten.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              exportiereAlle(regatten);
+              setBackupTick((t) => t + 1);
+            }}
+          >
+            Backup: alle exportieren
+          </button>
+        )}
         <input
           ref={dateiInput}
           type="file"
@@ -77,6 +111,15 @@ export function Regatten() {
           </button>
         )}
       </div>
+
+      {regatten.length > 0 && (
+        <p className={`hinweis no-print${backupVeraltet ? " hinweis--warnung" : ""}`}>
+          {backup
+            ? `Letztes Backup: ${backup.toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}`
+            : "Noch kein Backup exportiert"}
+          {backupVeraltet && " — die Daten liegen nur in diesem Browser, bitte exportieren!"}
+        </p>
+      )}
 
       {formOffen && (
         <div className="panel form-grid">
@@ -148,6 +191,7 @@ export function Regatten() {
                 onClick={(e) => {
                   e.stopPropagation();
                   exportiereRegatta(regatta);
+                  setBackupTick((t) => t + 1);
                 }}
               >
                 Export

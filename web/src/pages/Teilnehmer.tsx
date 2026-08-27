@@ -1,5 +1,6 @@
 import type { Boot } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
+import { PrintKopf } from "../components/PrintKopf";
 import { useData } from "../state/DataContext";
 
 function TextZelle({
@@ -36,11 +37,7 @@ export function Teilnehmer() {
 
   return (
     <div>
-      <div className="print-header">
-        <h1>
-          Meldeliste {aktiveRegatta.name} {aktiveRegatta.jahr}
-        </h1>
-      </div>
+      <PrintKopf regatta={aktiveRegatta} titel="Meldeliste" />
 
       <dl className="stat-grid no-print">
         <div className="stat-grid__item">
