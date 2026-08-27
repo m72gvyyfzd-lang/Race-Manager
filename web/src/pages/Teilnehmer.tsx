@@ -57,11 +57,9 @@ export function Teilnehmer() {
     <div>
       <PrintKopf
         regatta={aktiveRegatta}
+        seitentitel="Teilnehmer & Orga"
         titel={tab === "regatta" ? "Anmeldung Regatta" : "Anmeldung Essen"}
       />
-
-      <h1 className="titel-zentriert no-print">Teilnahme &amp; Orga</h1>
-      <hr className="trenner no-print" />
 
       <div className="orga-dashboard no-print">
         <dl className="stat-grid">

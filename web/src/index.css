@@ -288,6 +288,7 @@ section.panel input[type="number"] {
   border: 1px solid var(--border);
   border-radius: 8px;
   min-width: 8rem;
+  text-align: center;
 }
 
 .stat-grid__item dt {
@@ -593,9 +594,18 @@ img.regatta-card__symbol-bild {
 
 /* --- Listenkopf (Bildschirm & Druck) --- */
 .druck-kopf {
+  margin-bottom: 1rem;
+}
+
+.druck-kopf__oben {
   border-bottom: 2px solid var(--text-h);
   padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+}
+
+.druck-kopf__seitentitel {
+  text-align: center;
+  font-size: 1.4rem;
+  margin: 0.35rem 0 0;
 }
 
 .druck-kopf__banner {
@@ -638,10 +648,12 @@ span.druck-kopf__symbol {
 
 .druck-kopf__zeile {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: baseline;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.25rem;
   font-size: 0.95rem;
+  padding-top: 0.5rem;
 }
 
 .druck-kopf__titel {
@@ -655,7 +667,6 @@ span.druck-kopf__symbol {
 }
 
 .druck-kopf__meta {
-  text-align: right;
   opacity: 0.85;
 }
 
