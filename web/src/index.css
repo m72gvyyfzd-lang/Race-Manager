@@ -312,6 +312,102 @@ section.panel input[type="number"] {
   margin-top: 0.15rem;
 }
 
+/* --- Seitentitel & Kacheln (Regatta Management) --- */
+.titel-zentriert {
+  text-align: center;
+}
+
+.kachel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 880px) {
+  .kachel-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kachel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  background: var(--bg);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.kachel h2 {
+  margin: 0;
+}
+
+.kachel .hinweis {
+  margin: 0;
+}
+
+.kachel__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.kachel__fuss {
+  margin-top: auto !important;
+}
+
+.neue-regatta__ebene1 {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.neue-regatta__name {
+  flex: 1;
+  min-width: 0;
+}
+
+.neue-regatta__jahr {
+  width: 6.5rem;
+}
+
+.eingabe-zentriert {
+  text-align: center;
+}
+
+.eingabe-zentriert::placeholder {
+  opacity: 0.55;
+}
+
+.neue-regatta__ebene2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.75rem;
+  align-items: flex-start;
+}
+
+.neue-regatta__ebene3 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.neue-regatta__ebene3 button {
+  width: 25%;
+  min-width: 6.5rem;
+}
+
+.trenner {
+  border: none;
+  border-top: 2px solid var(--border);
+  margin: 1.5rem 0;
+}
+
 /* --- Regatta-Karten --- */
 .card-grid {
   display: grid;

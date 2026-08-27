@@ -45,6 +45,13 @@ export function Einstellungen() {
         <div>
           <span className="form-label">Regatta-Logo</span>
           <div className="symbol-row">
+            <button
+              type="button"
+              className={`symbol-btn${regatta.symbol === "" ? " is-active" : ""}`}
+              onClick={() => updateRegatta(regatta.id, { symbol: "" })}
+            >
+              ohne
+            </button>
             {REGATTA_LOGOS.map((logo) => (
               <button
                 key={logo.id}
@@ -66,7 +73,7 @@ export function Einstellungen() {
               className={`symbol-btn${!regatta.veranstalterLogo ? " is-active" : ""}`}
               onClick={() => updateRegatta(regatta.id, { veranstalterLogo: undefined })}
             >
-              keins
+              ohne
             </button>
             {VERANSTALTER_LOGOS.map((logo) => (
               <button
