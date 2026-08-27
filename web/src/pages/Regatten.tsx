@@ -22,13 +22,13 @@ export function Regatten() {
     importiereRegatten,
     loescheRegatta,
   } = useData();
-  const [formOffen, setFormOffen] = useState(false);
   const [name, setName] = useState("");
   const [jahr, setJahr] = useState("");
   const [datum, setDatum] = useState("");
   const [symbol, setSymbol] = useState("");
   const [veranstalterLogo, setVeranstalterLogo] = useState<string | undefined>(undefined);
   const dateiInput = useRef<HTMLInputElement>(null);
+  const nameInput = useRef<HTMLInputElement>(null);
 
   // backupTick erzwingt nach einem Export das Neu-Lesen des Backup-Zeitpunkts
   const [, setBackupTick] = useState(0);
@@ -36,7 +36,6 @@ export function Regatten() {
   const backupVeraltet = backupIstVeraltet();
 
   const formZuruecksetzen = () => {
-    setFormOffen(false);
     setName("");
     setJahr("");
     setDatum("");
@@ -90,100 +89,100 @@ export function Regatten() {
             <h2>Neue Regatta</h2>
             <button
               type="button"
-              className="primary"
-              onClick={() => (formOffen ? formZuruecksetzen() : setFormOffen(true))}
+              className="primary btn-viertel"
+              onClick={() => {
+                formZuruecksetzen();
+                nameInput.current?.focus();
+              }}
             >
               + neue Regatta
             </button>
           </div>
 
-          {formOffen ? (
-            <>
-              <div className="neue-regatta__ebene1">
-                <input
-                  className="eingabe-zentriert neue-regatta__name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Name der Regatta"
-                />
-                <input
-                  className="eingabe-zentriert neue-regatta__jahr"
-                  type="number"
-                  value={jahr}
-                  onChange={(e) => setJahr(e.target.value)}
-                  placeholder="Jahr"
-                />
-              </div>
+          <div className="neue-regatta__ebene1">
+            <input
+              ref={nameInput}
+              className="eingabe-zentriert neue-regatta__name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name der Regatta"
+            />
+            <input
+              className="eingabe-zentriert neue-regatta__jahr"
+              type="number"
+              value={jahr}
+              onChange={(e) => setJahr(e.target.value)}
+              placeholder="Jahr"
+            />
+          </div>
 
-              <div className="neue-regatta__ebene2">
-                <div>
-                  <span className="form-label">Datum</span>
-                  <input type="date" value={datum} onChange={(e) => setDatum(e.target.value)} />
-                </div>
-                <div>
-                  <span className="form-label">Veranstalter-Logo</span>
-                  <div className="symbol-row">
-                    <button
-                      type="button"
-                      className={`symbol-btn${veranstalterLogo === undefined ? " is-active" : ""}`}
-                      onClick={() => setVeranstalterLogo(undefined)}
-                    >
-                      ohne
-                    </button>
-                    {VERANSTALTER_LOGOS.map((logo) => (
-                      <button
-                        key={logo.id}
-                        type="button"
-                        title={logo.name}
-                        className={`symbol-btn${logo.id === veranstalterLogo ? " is-active" : ""}`}
-                        onClick={() => setVeranstalterLogo(logo.id)}
-                      >
-                        <img src={logo.url} alt={logo.name} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <span className="form-label">Regatta-Logo</span>
-                  <div className="symbol-row">
-                    <button
-                      type="button"
-                      className={`symbol-btn${symbol === "" ? " is-active" : ""}`}
-                      onClick={() => setSymbol("")}
-                    >
-                      ohne
-                    </button>
-                    {REGATTA_LOGOS.map((logo) => (
-                      <button
-                        key={logo.id}
-                        type="button"
-                        title={logo.name}
-                        className={`symbol-btn${logo.id === symbol ? " is-active" : ""}`}
-                        onClick={() => setSymbol(logo.id)}
-                      >
-                        <img src={logo.url} alt={logo.name} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          <div className="neue-regatta__ebene2">
+            <div className="neue-regatta__datum">
+              <span className="form-label">Datum</span>
+              <input type="date" value={datum} onChange={(e) => setDatum(e.target.value)} />
+            </div>
+            <div className="neue-regatta__veranstalter">
+              <span className="form-label">Veranstalter-Logo</span>
+              <div className="symbol-row">
+                <button
+                  type="button"
+                  className={`symbol-btn${veranstalterLogo === undefined ? " is-active" : ""}`}
+                  onClick={() => setVeranstalterLogo(undefined)}
+                >
+                  ohne
+                </button>
+                {VERANSTALTER_LOGOS.map((logo) => (
+                  <button
+                    key={logo.id}
+                    type="button"
+                    title={logo.name}
+                    className={`symbol-btn${logo.id === veranstalterLogo ? " is-active" : ""}`}
+                    onClick={() => setVeranstalterLogo(logo.id)}
+                  >
+                    <img src={logo.url} alt={logo.name} />
+                  </button>
+                ))}
               </div>
+            </div>
+            <div className="neue-regatta__regattalogo">
+              <span className="form-label">Regatta-Logo</span>
+              <div className="symbol-row">
+                <button
+                  type="button"
+                  className={`symbol-btn${symbol === "" ? " is-active" : ""}`}
+                  onClick={() => setSymbol("")}
+                >
+                  ohne
+                </button>
+                {REGATTA_LOGOS.map((logo) => (
+                  <button
+                    key={logo.id}
+                    type="button"
+                    title={logo.name}
+                    className={`symbol-btn${logo.id === symbol ? " is-active" : ""}`}
+                    onClick={() => setSymbol(logo.id)}
+                  >
+                    <img src={logo.url} alt={logo.name} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
-              <div className="neue-regatta__ebene3">
-                <button type="button" onClick={formZuruecksetzen}>
-                  Abbrechen
-                </button>
-                <button type="button" className="primary" onClick={anlegen} disabled={!name.trim()}>
-                  Anlegen
-                </button>
-              </div>
-            </>
-          ) : (
-            <p className="hinweis">
-              Lege eine neue Regatta mit Name, Jahr, Datum und Logos an — der Button rechts
-              öffnet das Formular.
-            </p>
-          )}
+          <div className="neue-regatta__ebene3">
+            <button type="button" className="btn-viertel" onClick={formZuruecksetzen}>
+              Abbrechen
+            </button>
+            <button
+              type="button"
+              className="primary btn-viertel"
+              onClick={anlegen}
+              disabled={!name.trim()}
+            >
+              Anlegen
+            </button>
+          </div>
         </section>
 
         <section className="kachel">
@@ -239,7 +238,7 @@ export function Regatten() {
 
       <hr className="trenner no-print" />
 
-      {regatten.length === 0 && !formOffen && (
+      {regatten.length === 0 && (
         <p>Noch keine Regatta angelegt — starte mit „+ neue Regatta“ oder lade das Beispiel.</p>
       )}
 

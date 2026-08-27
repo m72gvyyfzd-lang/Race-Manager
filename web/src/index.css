@@ -385,10 +385,40 @@ section.panel input[type="number"] {
 }
 
 .neue-regatta__ebene2 {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 1.75rem;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 25% 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.neue-regatta__ebene2 .form-label {
+  white-space: nowrap;
+}
+
+.neue-regatta__ebene2 .symbol-row {
+  flex-wrap: nowrap;
+}
+
+.neue-regatta__datum input {
+  width: 100%;
+}
+
+.neue-regatta__veranstalter {
+  justify-self: center;
+  text-align: center;
+}
+
+.neue-regatta__veranstalter .symbol-row {
+  justify-content: center;
+}
+
+.neue-regatta__regattalogo {
+  justify-self: end;
+  text-align: center;
+}
+
+.neue-regatta__regattalogo .symbol-row {
+  justify-content: flex-end;
 }
 
 .neue-regatta__ebene3 {
@@ -397,9 +427,27 @@ section.panel input[type="number"] {
   margin-top: auto;
 }
 
-.neue-regatta__ebene3 button {
+.btn-viertel {
   width: 25%;
-  min-width: 6.5rem;
+  min-width: 9.5rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 880px) {
+  .neue-regatta__ebene2 {
+    grid-template-columns: 1fr;
+  }
+
+  .neue-regatta__veranstalter,
+  .neue-regatta__regattalogo {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .neue-regatta__veranstalter .symbol-row,
+  .neue-regatta__regattalogo .symbol-row {
+    justify-content: flex-start;
+  }
 }
 
 .trenner {
