@@ -1,0 +1,8 @@
+{
+  "name": "race-manager",
+  "private": true,
+  "workspaces": [
+    "core",
+    "web"
+  ]
+}

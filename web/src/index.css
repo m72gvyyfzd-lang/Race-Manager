@@ -1,0 +1,76 @@
+:root {
+  --text: #2b2b2b;
+  --text-h: #08060d;
+  --bg: #fff;
+  --border: #e2e2e2;
+  --row-alt: #f7f9fa;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font: 16px/145% system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #d6d6d6;
+    --text-h: #f3f4f6;
+    --bg: #16171d;
+    --border: #2e303a;
+    --row-alt: #1c1e26;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1 {
+  font-size: 1.5rem;
+  color: var(--text-h);
+  margin: 0 0 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+tbody tr:nth-child(even) {
+  background: var(--row-alt);
+}
+
+.stat-grid {
+  display: flex;
+  gap: 2rem;
+  margin: 1.5rem 0 0;
+}
+
+.stat-grid__item {
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-width: 8rem;
+}
+
+.stat-grid__item dt {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.stat-grid__item dd {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0.25rem 0 0;
+  color: var(--text-h);
+}

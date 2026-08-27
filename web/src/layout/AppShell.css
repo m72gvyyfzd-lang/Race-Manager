@@ -1,0 +1,46 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell__topbar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 1.5rem;
+  background: #0b3d59;
+  color: #fff;
+}
+
+.app-shell__title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.app-shell__nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.app-shell__link {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.app-shell__link.is-active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.app-shell__content {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
