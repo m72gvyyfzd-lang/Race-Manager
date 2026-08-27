@@ -17,7 +17,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <aside className="app-sidebar no-print">
-        <div className="app-sidebar__brand">Race Manager</div>
+        <div className="app-sidebar__brand">
+          Race Manager
+          <span className="app-sidebar__version">{__APP_VERSION__}</span>
+        </div>
         <nav className="app-sidebar__nav">
           {NAV_ITEMS.map((item) => (
             <NavLink

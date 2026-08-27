@@ -27,6 +27,15 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.app-sidebar__version {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
 .app-sidebar__nav {
   display: flex;
   flex-direction: column;
