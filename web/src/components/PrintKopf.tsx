@@ -1,7 +1,6 @@
 import type { Regatta } from "@race-manager/core";
-import { veranstalterLogoUrl } from "../data/logos";
 import { formatDatum } from "../lib/zeitHelfer";
-import { RegattaSymbol } from "./RegattaSymbol";
+import { RegattaBanner } from "./RegattaBanner";
 
 /**
  * Listenkopf für Bildschirm und Druck:
@@ -19,20 +18,9 @@ export function PrintKopf({
   titel: string;
   untertitel?: string;
 }) {
-  const veranstalter = veranstalterLogoUrl(regatta.veranstalterLogo);
   return (
     <header className="druck-kopf">
-      <div className="druck-kopf__banner">
-        <div className="druck-kopf__logo">
-          {veranstalter && <img src={veranstalter} alt="Veranstalterlogo" />}
-        </div>
-        <div className="druck-kopf__name">
-          {regatta.name} - {regatta.jahr}
-        </div>
-        <div className="druck-kopf__logo druck-kopf__logo--rechts">
-          <RegattaSymbol symbol={regatta.symbol} className="druck-kopf__symbol" />
-        </div>
-      </div>
+      <RegattaBanner regatta={regatta} />
       <div className="druck-kopf__zeile">
         <div>
           <span className="druck-kopf__titel">{titel}</span>

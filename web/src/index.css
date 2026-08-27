@@ -456,6 +456,37 @@ section.panel input[type="number"] {
   margin: 1.5rem 0;
 }
 
+/* --- Einstellungen --- */
+.einstellungen-banner {
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--text-h);
+}
+
+.einstellungen-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+@media (max-width: 1000px) {
+  .einstellungen-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.einstellungen-streicher {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.einstellungen-streicher input {
+  max-width: 8rem;
+}
+
 /* --- Regatta-Karten --- */
 .card-grid {
   display: grid;
