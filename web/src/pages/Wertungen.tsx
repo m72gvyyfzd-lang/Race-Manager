@@ -47,13 +47,31 @@ const KANGAROO_TABS: { id: StartTabId; label: string }[] = [
 const nachYardstick = (a: { yardstick: number; name: string }, b: { yardstick: number; name: string }) =>
   b.yardstick - a.yardstick || a.name.localeCompare(b.name, "de");
 
-function drucken(titel: string) {
+/**
+ * Druckt die aktuelle Ansicht. Das Seitenformat wird für den Druckvorgang
+ * per @page-Regel gesetzt: Startlisten hochkant, Ergebnislisten quer.
+ * Der Dateiname im PDF-Dialog kommt aus dem Dokumenttitel.
+ */
+function drucken(titel: string, format: "hoch" | "quer") {
+  const style = document.createElement("style");
+  style.textContent = `@page { size: A4 ${format === "hoch" ? "portrait" : "landscape"}; margin: 12mm; }`;
+  document.head.appendChild(style);
+
   const vorher = document.title;
   document.title = titel;
   window.print();
   setTimeout(() => {
     document.title = vorher;
+    style.remove();
   }, 500);
+}
+
+function DruckButton({ onDruck }: { onDruck: () => void }) {
+  return (
+    <button type="button" className="karteireiter__druck no-print" onClick={onDruck}>
+      Drucken / PDF
+    </button>
+  );
 }
 
 function wertungsTitel(regatta: Regatta, wertungsart: Wertungsart): string {
@@ -135,14 +153,6 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
           </table>
         </div>
       )}
-      <div className="button-row no-print">
-        <button
-          type="button"
-          onClick={() => drucken(`Startliste ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`)}
-        >
-          Drucken / PDF
-        </button>
-      </div>
     </div>
   );
 }
@@ -336,14 +346,6 @@ function ErgebnisTab({
       {ergebnis.some((z) => z.punkteManuell) && (
         <p className="hinweis">* Punkte manuell von der Wettfahrtleitung vergeben</p>
       )}
-      <div className="button-row no-print">
-        <button
-          type="button"
-          onClick={() => drucken(`Ergebnis ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`)}
-        >
-          Drucken / PDF
-        </button>
-      </div>
     </div>
   );
 }
@@ -363,9 +365,9 @@ function GesamtPanel({
 
   return (
     <div>
-      {!kangaroo && (
-        <div className="karteireiter no-print" role="tablist">
-          {(Object.keys(WERTUNGSART_LABEL) as Wertungsart[]).map((art) => (
+      <div className="karteireiter no-print" role="tablist">
+        {!kangaroo &&
+          (Object.keys(WERTUNGSART_LABEL) as Wertungsart[]).map((art) => (
             <button
               key={art}
               type="button"
@@ -377,8 +379,10 @@ function GesamtPanel({
               {WERTUNGSART_LABEL[art]}
             </button>
           ))}
-        </div>
-      )}
+        <DruckButton
+          onDruck={() => drucken(`Gesamtwertung ${regatta.name} ${regatta.jahr}`, "quer")}
+        />
+      </div>
       <div className={`karteikarte${kangaroo ? " karteikarte--voll" : ""}`}>
       {aktiveStarts.length === 0 ? (
         <p>Noch kein Start zählt zur Gesamtwertung.</p>
@@ -422,14 +426,6 @@ function GesamtPanel({
                 ))}
               </tbody>
             </table>
-          </div>
-          <div className="button-row no-print">
-            <button
-              type="button"
-              onClick={() => drucken(`Gesamtwertung ${regatta.name} ${regatta.jahr}`)}
-            >
-              Drucken / PDF
-            </button>
           </div>
         </>
       )}
@@ -659,6 +655,21 @@ export function Wertungen() {
                 {t.label}
               </button>
             ))}
+            {tabAktiv !== "zeiten" && (
+              <DruckButton
+                onDruck={() =>
+                  tabAktiv === "startliste"
+                    ? drucken(
+                        `Startliste ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`,
+                        "hoch",
+                      )
+                    : drucken(
+                        `Ergebnis ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`,
+                        "quer",
+                      )
+                }
+              />
+            )}
           </div>
           <div className="karteikarte">
             {tabAktiv === "startliste" && <StartlisteTab regatta={regatta} start={start} />}

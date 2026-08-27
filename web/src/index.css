@@ -683,8 +683,15 @@ span.druck-kopf__symbol {
 /* --- Karteikarten (Start-Ansichten) --- */
 .karteireiter {
   display: flex;
+  align-items: flex-end;
   gap: 0.25rem;
   margin: 1rem 0 0;
+}
+
+/* Druck-Button auf Höhe der Reiter, rechts außen */
+.karteireiter__druck {
+  margin-left: auto;
+  margin-bottom: 0.25rem;
 }
 
 .karteireiter__tab {
