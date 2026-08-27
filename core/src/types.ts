@@ -55,11 +55,23 @@ export interface Zeiteintrag {
   bemerkung?: string;
 }
 
+/** Essen-Anmeldung (unabhängig von den Booten — z.B. Begleitung, Helfer). */
+export interface EssenAnmeldung {
+  id: string;
+  name: string;
+  essenErwachsen: number;
+  essenKind: number;
+  bezahlt: boolean;
+  bemerkung?: string;
+}
+
 export interface Regatta {
   id: string;
   name: string;
-  /** Anzeige-Symbol (Emoji) für Listen und Kacheln */
+  /** Regatta-Symbol: id eines Regatta-Logos, bei Alt-Daten ein Emoji */
   symbol: string;
+  /** id des Veranstalterlogos (optional, erscheint im Listenkopf) */
+  veranstalterLogo?: string;
   jahr: number;
   /** ISO-Datum (YYYY-MM-DD) */
   datum?: string;
@@ -69,4 +81,6 @@ export interface Regatta {
   boote: Boot[];
   starts: Start[];
   zeiten: Zeiteintrag[];
+  /** Essen-Anmeldungen (fehlt in Alt-Daten → wie leer behandeln) */
+  essenAnmeldungen?: EssenAnmeldung[];
 }

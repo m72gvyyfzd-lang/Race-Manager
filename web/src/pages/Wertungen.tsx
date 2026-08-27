@@ -33,40 +33,144 @@ function drucken(titel: string) {
   }, 500);
 }
 
-function WertungsartTabs({
-  wert,
-  onWert,
-}: {
-  wert: Wertungsart;
-  onWert: (wert: Wertungsart) => void;
-}) {
+function wertungsTitel(regatta: Regatta, wertungsart: Wertungsart): string {
+  return regatta.startmodus === "kangaroo"
+    ? "nach Zieleinlauf (Kangaroo)"
+    : WERTUNGSART_LABEL[wertungsart];
+}
+
+function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
+  const { updateStart } = useData();
+  const kangaroo = regatta.startmodus === "kangaroo";
+
+  const startliste =
+    kangaroo && start.geplanteStartzeit !== undefined && start.basiszeit !== undefined
+      ? kangarooStartzeiten(regatta.boote, start.geplanteStartzeit, start.basiszeit)
+      : null;
+
+  const booteSortiert = [...regatta.boote].sort((a, b) => a.name.localeCompare(b.name, "de"));
+  const eintrag = (bootId: string) =>
+    regatta.zeiten.find((z) => z.startId === start.id && z.bootId === bootId);
+
   return (
-    <div className="chip-row no-print">
-      {(Object.keys(WERTUNGSART_LABEL) as Wertungsart[]).map((art) => (
+    <div>
+      <PrintKopf
+        regatta={regatta}
+        titel={`Startliste ${start.nummer}. Start: ${start.bezeichnung}`}
+      />
+      {kangaroo && (
+        <div className="form-grid no-print" style={{ marginBottom: "1rem" }}>
+          <label>
+            Geplante Startzeit (1. Boot)
+            <TimeInput
+              wert={start.geplanteStartzeit}
+              onWert={(wert) => updateStart(start.id, { geplanteStartzeit: wert })}
+            />
+          </label>
+          <label>
+            Kalkulierte Streckenzeit (YS 100)
+            <TimeInput
+              wert={start.basiszeit}
+              onWert={(wert) => updateStart(start.id, { basiszeit: wert })}
+              placeholder="z.B. 23000 für 2:30:00"
+            />
+          </label>
+        </div>
+      )}
+      {kangaroo ? (
+        startliste ? (
+          <div className="tabelle-scroll">
+            <table className="tabelle tabelle--mittig">
+              <thead>
+                <tr>
+                  <th>Startfolge</th>
+                  <th className="spalte-links">Boot</th>
+                  <th>Yardstick</th>
+                  <th>Verzögerung</th>
+                  <th>Startzeit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {startliste.map((zeile, index) => (
+                  <tr key={zeile.boot.id}>
+                    <td>{index + 1}</td>
+                    <td className="spalte-links">{zeile.boot.name}</td>
+                    <td>{zeile.boot.yardstick}</td>
+                    <td>+{formatDauer(zeile.offsetSek)}</td>
+                    <td>{formatUhrzeit(zeile.startzeit)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="no-print">
+            Geplante Startzeit und kalkulierte Streckenzeit eingeben, dann erscheinen hier die
+            individuellen Startzeiten (langsamstes Boot zuerst).
+          </p>
+        )
+      ) : (
+        <div className="tabelle-scroll">
+          <table className="tabelle tabelle--mittig">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th className="spalte-links">Boot</th>
+                <th>Skipper</th>
+                <th>Yardstick</th>
+                <th>Startzeit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {booteSortiert.map((boot, index) => (
+                <tr key={boot.id}>
+                  <td>{index + 1}</td>
+                  <td className="spalte-links">{boot.name}</td>
+                  <td>{boot.skipper}</td>
+                  <td>{boot.yardstick}</td>
+                  <td>
+                    {eintrag(boot.id)?.startzeit !== undefined
+                      ? formatUhrzeit(eintrag(boot.id)!.startzeit!)
+                      : "–"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="button-row no-print">
         <button
-          key={art}
           type="button"
-          className={`chip${wert === art ? " is-active" : ""}`}
-          onClick={() => onWert(art)}
+          onClick={() => drucken(`Startliste ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`)}
         >
-          {WERTUNGSART_LABEL[art]}
+          Drucken / PDF
         </button>
-      ))}
+      </div>
     </div>
   );
 }
 
-function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
-  const { updateStart, removeStart, setZeit } = useData();
-  const [wertungsart, setWertungsart] = useState<Wertungsart>("gesegelt");
+function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }) {
+  const { setZeit } = useData();
   const [massenstart, setMassenstart] = useState<number | undefined>(undefined);
   const kangaroo = regatta.startmodus === "kangaroo";
   const boote = [...regatta.boote].sort((a, b) => a.name.localeCompare(b.name, "de"));
 
+  const eintrag = (bootId: string) =>
+    regatta.zeiten.find((z) => z.startId === start.id && z.bootId === bootId);
+
+  const startliste =
+    kangaroo && start.geplanteStartzeit !== undefined && start.basiszeit !== undefined
+      ? kangarooStartzeiten(regatta.boote, start.geplanteStartzeit, start.basiszeit)
+      : null;
+
+  const ergebnis = berechneStartErgebnis(regatta, start, "gesegelt");
+
   const massenstartUebernehmen = () => {
     if (massenstart === undefined) return;
     const abweichend = boote.some((b) => {
-      const s = regatta.zeiten.find((z) => z.startId === start.id && z.bootId === b.id)?.startzeit;
+      const s = eintrag(b.id)?.startzeit;
       return s !== undefined && s !== massenstart;
     });
     if (
@@ -80,16 +184,222 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
     }
   };
 
-  const eintrag = (bootId: string) =>
-    regatta.zeiten.find((z) => z.startId === start.id && z.bootId === bootId);
+  return (
+    <div className="no-print">
+      <p className="hinweis">
+        Zeiten als Ziffern eingeben: z.B. <code>154023</code> für 15:40:23 — oder an der
+        Ziellinie einfach <strong>Jetzt</strong> antippen.
+        {kangaroo && " Startzeiten kommen aus der Startliste, nur bei Abweichung überschreiben."}
+      </p>
+      {!kangaroo && (
+        <div className="massenstart">
+          <span>Startzeit für alle:</span>
+          <TimeInput wert={massenstart} onWert={setMassenstart} />
+          <button type="button" onClick={() => setMassenstart(jetztSekunden())}>
+            Jetzt
+          </button>
+          <button
+            type="button"
+            className="primary"
+            disabled={massenstart === undefined}
+            onClick={massenstartUebernehmen}
+          >
+            Für alle übernehmen
+          </button>
+        </div>
+      )}
+      <div className="tabelle-scroll">
+        <table className="tabelle tabelle--mittig">
+          <thead>
+            <tr>
+              <th className="spalte-links">Boot</th>
+              <th>YS</th>
+              <th>Startzeit</th>
+              <th>Zielzeit</th>
+              <th>Status</th>
+              <th>gesegelt</th>
+              <th>berechnet</th>
+              <th title="Manuelle Punktvergabe der Wettfahrtleitung — überschreibt die Berechnung">
+                Punkte man.
+              </th>
+              <th>Bemerkung</th>
+            </tr>
+          </thead>
+          <tbody>
+            {boote.map((boot) => {
+              const zeit = eintrag(boot.id);
+              const zeile = ergebnis.find((z) => z.boot.id === boot.id);
+              return (
+                <tr key={boot.id}>
+                  <td className="spalte-links">{boot.name}</td>
+                  <td>{boot.yardstick}</td>
+                  <td>
+                    <TimeInput
+                      wert={zeit?.startzeit}
+                      onWert={(wert) => setZeit(start.id, boot.id, { startzeit: wert })}
+                      placeholder={
+                        startliste
+                          ? formatUhrzeit(startliste.find((z) => z.boot.id === boot.id)!.startzeit)
+                          : undefined
+                      }
+                    />
+                  </td>
+                  <td>
+                    <div className="ziel-zelle">
+                      <TimeInput
+                        wert={zeit?.zielzeit}
+                        onWert={(wert) => setZeit(start.id, boot.id, { zielzeit: wert })}
+                      />
+                      <button
+                        type="button"
+                        className="stempel-btn"
+                        title="Zielzeit auf jetzt stempeln"
+                        onClick={() => setZeit(start.id, boot.id, { zielzeit: jetztSekunden() })}
+                      >
+                        Jetzt
+                      </button>
+                    </div>
+                  </td>
+                  <td>
+                    <select
+                      value={zeit?.status ?? ""}
+                      onChange={(e) =>
+                        setZeit(start.id, boot.id, {
+                          status: (e.target.value || undefined) as Sonderstatus | undefined,
+                        })
+                      }
+                    >
+                      <option value=""></option>
+                      {STATUS_OPTIONEN.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>{zeile?.gesegeltSek !== undefined ? formatDauer(zeile.gesegeltSek) : "–"}</td>
+                  <td>{zeile?.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
+                  <td>
+                    <input
+                      className="zelle zelle--zahl"
+                      type="number"
+                      min={0}
+                      step={0.5}
+                      value={zeit?.punkteManuell ?? ""}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onChange={(e) =>
+                        setZeit(start.id, boot.id, {
+                          punkteManuell: e.target.value === "" ? undefined : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </td>
+                  <td>
+                    <input
+                      className="zelle"
+                      value={zeit?.bemerkung ?? ""}
+                      onChange={(e) =>
+                        setZeit(start.id, boot.id, { bemerkung: e.target.value || undefined })
+                      }
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
-  const startliste =
-    kangaroo && start.geplanteStartzeit !== undefined && start.basiszeit !== undefined
-      ? kangarooStartzeiten(regatta.boote, start.geplanteStartzeit, start.basiszeit)
-      : null;
-
+function ErgebnisTab({
+  regatta,
+  start,
+  wertungsart,
+}: {
+  regatta: Regatta;
+  start: Start;
+  wertungsart: Wertungsart;
+}) {
   const ergebnis = berechneStartErgebnis(regatta, start, wertungsart);
-  const wertungsTitel = kangaroo ? "nach Zieleinlauf (Kangaroo)" : WERTUNGSART_LABEL[wertungsart];
+  const mitBemerkung = ergebnis.some((z) => z.bemerkung);
+
+  return (
+    <div>
+      <PrintKopf
+        regatta={regatta}
+        titel={`Ergebnisliste ${start.nummer}. Start: ${start.bezeichnung}`}
+        untertitel={`Wertung ${wertungsTitel(regatta, wertungsart)}`}
+      />
+      <div className="tabelle-scroll">
+        <table className="tabelle tabelle--mittig">
+          <thead>
+            <tr>
+              <th>Platz</th>
+              <th className="spalte-links">Boot</th>
+              <th>Skipper</th>
+              <th>Crew</th>
+              <th>YS</th>
+              <th>Start</th>
+              <th>Ziel</th>
+              <th>gesegelte Zeit</th>
+              <th>berechnete Zeit</th>
+              <th>Punkte</th>
+              {mitBemerkung && <th>Bemerkung</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {ergebnis.map((zeile) => (
+              <tr key={zeile.boot.id}>
+                <td>{zeile.status ?? zeile.platz}</td>
+                <td className="spalte-links">{zeile.boot.name}</td>
+                <td>{zeile.boot.skipper}</td>
+                <td>{zeile.boot.crew}</td>
+                <td>{zeile.boot.yardstick}</td>
+                <td>{zeile.startzeit !== undefined ? formatUhrzeit(zeile.startzeit) : "–"}</td>
+                <td>{zeile.zielzeit !== undefined ? formatUhrzeit(zeile.zielzeit) : "–"}</td>
+                <td>{zeile.gesegeltSek !== undefined ? formatDauer(zeile.gesegeltSek) : "–"}</td>
+                <td>{zeile.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
+                <td>
+                  {zeile.punkte}
+                  {zeile.punkteManuell && (
+                    <span title="Punkte manuell von der Wettfahrtleitung vergeben"> *</span>
+                  )}
+                </td>
+                {mitBemerkung && <td>{zeile.bemerkung ?? ""}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {ergebnis.some((z) => z.punkteManuell) && (
+        <p className="hinweis">* Punkte manuell von der Wettfahrtleitung vergeben</p>
+      )}
+      <div className="button-row no-print">
+        <button
+          type="button"
+          onClick={() => drucken(`Ergebnis ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`)}
+        >
+          Drucken / PDF
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const START_TABS = [
+  { id: "startliste", label: "Startliste" },
+  { id: "zeiten", label: "Zeiterfassung" },
+  { id: "gesegelt", label: "Ergebnis gesegelt" },
+  { id: "berechnet", label: "Ergebnis berechnet" },
+] as const;
+
+type StartTabId = (typeof START_TABS)[number]["id"];
+
+function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
+  const { updateStart, removeStart } = useData();
+  const [tab, setTab] = useState<StartTabId>("zeiten");
 
   return (
     <div>
@@ -109,25 +419,6 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
           />
           zählt zur Gesamtwertung
         </label>
-        {kangaroo && (
-          <>
-            <label>
-              Geplante Startzeit (1. Boot)
-              <TimeInput
-                wert={start.geplanteStartzeit}
-                onWert={(wert) => updateStart(start.id, { geplanteStartzeit: wert })}
-              />
-            </label>
-            <label>
-              Kalkulierte Streckenzeit (YS 100)
-              <TimeInput
-                wert={start.basiszeit}
-                onWert={(wert) => updateStart(start.id, { basiszeit: wert })}
-                placeholder="z.B. 23000 für 2:30:00"
-              />
-            </label>
-          </>
-        )}
         <div className="button-row">
           <button
             type="button"
@@ -143,236 +434,28 @@ function StartPanel({ regatta, start }: { regatta: Regatta; start: Start }) {
         </div>
       </div>
 
-      {kangaroo && (
-        <section>
-          <h2>Startliste</h2>
-          {startliste ? (
-            <div className="tabelle-scroll">
-              <table className="tabelle">
-                <thead>
-                  <tr>
-                    <th>Startfolge</th>
-                    <th>Boot</th>
-                    <th>Yardstick</th>
-                    <th>Verzögerung</th>
-                    <th>Startzeit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {startliste.map((zeile, index) => (
-                    <tr key={zeile.boot.id}>
-                      <td>{index + 1}</td>
-                      <td>{zeile.boot.name}</td>
-                      <td>{zeile.boot.yardstick}</td>
-                      <td>+{formatDauer(zeile.offsetSek)}</td>
-                      <td>{formatUhrzeit(zeile.startzeit)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="no-print">
-              Geplante Startzeit und kalkulierte Streckenzeit eingeben, dann erscheinen hier die
-              individuellen Startzeiten (langsamstes Boot zuerst).
-            </p>
-          )}
-        </section>
-      )}
-
-      <section className="no-print">
-        <h2>Zeiterfassung</h2>
-        <p className="hinweis">
-          Zeiten als Ziffern eingeben: z.B. <code>154023</code> für 15:40:23 — oder an der
-          Ziellinie einfach <strong>Jetzt</strong> antippen.
-          {kangaroo && " Startzeiten kommen aus der Startliste, nur bei Abweichung überschreiben."}
-        </p>
-        {!kangaroo && (
-          <div className="massenstart no-print">
-            <span>Startzeit für alle:</span>
-            <TimeInput wert={massenstart} onWert={setMassenstart} />
-            <button type="button" onClick={() => setMassenstart(jetztSekunden())}>
-              Jetzt
-            </button>
-            <button
-              type="button"
-              className="primary"
-              disabled={massenstart === undefined}
-              onClick={massenstartUebernehmen}
-            >
-              Für alle übernehmen
-            </button>
-          </div>
-        )}
-        <div className="tabelle-scroll">
-          <table className="tabelle">
-            <thead>
-              <tr>
-                <th>Boot</th>
-                <th>YS</th>
-                <th>Startzeit</th>
-                <th>Zielzeit</th>
-                <th>Status</th>
-                <th>gesegelt</th>
-                <th>berechnet</th>
-                <th title="Manuelle Punktvergabe der Wettfahrtleitung — überschreibt die Berechnung">
-                  Punkte man.
-                </th>
-                <th>Bemerkung</th>
-              </tr>
-            </thead>
-            <tbody>
-              {boote.map((boot) => {
-                const zeit = eintrag(boot.id);
-                const zeile = ergebnis.find((z) => z.boot.id === boot.id);
-                return (
-                  <tr key={boot.id}>
-                    <td>{boot.name}</td>
-                    <td>{boot.yardstick}</td>
-                    <td>
-                      <TimeInput
-                        wert={zeit?.startzeit}
-                        onWert={(wert) => setZeit(start.id, boot.id, { startzeit: wert })}
-                        placeholder={
-                          startliste
-                            ? formatUhrzeit(
-                                startliste.find((z) => z.boot.id === boot.id)!.startzeit,
-                              )
-                            : undefined
-                        }
-                      />
-                    </td>
-                    <td>
-                      <div className="ziel-zelle">
-                        <TimeInput
-                          wert={zeit?.zielzeit}
-                          onWert={(wert) => setZeit(start.id, boot.id, { zielzeit: wert })}
-                        />
-                        <button
-                          type="button"
-                          className="stempel-btn"
-                          title="Zielzeit auf jetzt stempeln"
-                          onClick={() => setZeit(start.id, boot.id, { zielzeit: jetztSekunden() })}
-                        >
-                          Jetzt
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <select
-                        value={zeit?.status ?? ""}
-                        onChange={(e) =>
-                          setZeit(start.id, boot.id, {
-                            status: (e.target.value || undefined) as Sonderstatus | undefined,
-                          })
-                        }
-                      >
-                        <option value=""></option>
-                        {STATUS_OPTIONEN.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>{zeile?.gesegeltSek !== undefined ? formatDauer(zeile.gesegeltSek) : "–"}</td>
-                    <td>
-                      {zeile?.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}
-                    </td>
-                    <td>
-                      <input
-                        className="zelle zelle--zahl"
-                        type="number"
-                        min={0}
-                        step={0.5}
-                        value={zeit?.punkteManuell ?? ""}
-                        onChange={(e) =>
-                          setZeit(start.id, boot.id, {
-                            punkteManuell:
-                              e.target.value === "" ? undefined : Number(e.target.value),
-                          })
-                        }
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="zelle"
-                        value={zeit?.bemerkung ?? ""}
-                        onChange={(e) =>
-                          setZeit(start.id, boot.id, { bemerkung: e.target.value || undefined })
-                        }
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section>
-        <PrintKopf
-          regatta={regatta}
-          titel={`Ergebnisliste ${start.nummer}. Start: ${start.bezeichnung}`}
-          untertitel={`Wertung ${wertungsTitel}`}
-        />
-        {!kangaroo && <WertungsartTabs wert={wertungsart} onWert={setWertungsart} />}
-        <div className="tabelle-scroll">
-          <table className="tabelle">
-            <thead>
-              <tr>
-                <th>Platz</th>
-                <th>Boot</th>
-                <th>Skipper</th>
-                <th>Crew</th>
-                <th>YS</th>
-                <th>Start</th>
-                <th>Ziel</th>
-                <th>gesegelte Zeit</th>
-                <th>berechnete Zeit</th>
-                <th>Punkte</th>
-                {ergebnis.some((z) => z.bemerkung) && <th>Bemerkung</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {ergebnis.map((zeile) => (
-                <tr key={zeile.boot.id}>
-                  <td>{zeile.status ?? zeile.platz}</td>
-                  <td>{zeile.boot.name}</td>
-                  <td>{zeile.boot.skipper}</td>
-                  <td>{zeile.boot.crew}</td>
-                  <td>{zeile.boot.yardstick}</td>
-                  <td>{zeile.startzeit !== undefined ? formatUhrzeit(zeile.startzeit) : "–"}</td>
-                  <td>{zeile.zielzeit !== undefined ? formatUhrzeit(zeile.zielzeit) : "–"}</td>
-                  <td>{zeile.gesegeltSek !== undefined ? formatDauer(zeile.gesegeltSek) : "–"}</td>
-                  <td>{zeile.berechnetSek !== undefined ? formatDauer(zeile.berechnetSek) : "–"}</td>
-                  <td>
-                    {zeile.punkte}
-                    {zeile.punkteManuell && (
-                      <span title="Punkte manuell von der Wettfahrtleitung vergeben"> *</span>
-                    )}
-                  </td>
-                  {ergebnis.some((z) => z.bemerkung) && <td>{zeile.bemerkung ?? ""}</td>}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {ergebnis.some((z) => z.punkteManuell) && (
-          <p className="hinweis">* Punkte manuell von der Wettfahrtleitung vergeben</p>
-        )}
-        <div className="button-row no-print">
+      <div className="karteireiter no-print" role="tablist">
+        {START_TABS.map((t) => (
           <button
+            key={t.id}
             type="button"
-            onClick={() =>
-              drucken(`Ergebnis ${start.bezeichnung} ${regatta.name} ${regatta.jahr}`)
-            }
+            role="tab"
+            aria-selected={tab === t.id}
+            className={`karteireiter__tab${tab === t.id ? " is-active" : ""}`}
+            onClick={() => setTab(t.id)}
           >
-            Drucken / PDF
+            {t.label}
           </button>
-        </div>
-      </section>
+        ))}
+      </div>
+      <div className="karteikarte">
+        {tab === "startliste" && <StartlisteTab regatta={regatta} start={start} />}
+        {tab === "zeiten" && <ZeiterfassungTab regatta={regatta} start={start} />}
+        {tab === "gesegelt" && <ErgebnisTab regatta={regatta} start={start} wertungsart="gesegelt" />}
+        {tab === "berechnet" && (
+          <ErgebnisTab regatta={regatta} start={start} wertungsart="berechnet" />
+        )}
+      </div>
     </div>
   );
 }
@@ -383,30 +466,42 @@ function GesamtPanel({ regatta }: { regatta: Regatta }) {
   const wertung = berechneGesamtwertung(regatta, wertungsart);
   const aktiveStarts = regatta.starts.filter((s) => s.aktiv).sort((a, b) => a.nummer - b.nummer);
   const streicher = Math.min(regatta.streicher, maxStreicher(regatta));
-  const wertungsTitel = kangaroo ? "nach Zieleinlauf (Kangaroo)" : WERTUNGSART_LABEL[wertungsart];
 
   return (
     <div>
       <PrintKopf
         regatta={regatta}
         titel="Gesamtwertung"
-        untertitel={`Wertung ${wertungsTitel}${
+        untertitel={`Wertung ${wertungsTitel(regatta, wertungsart)}${
           streicher > 0
             ? ` · ${streicher} Streichergebnis${streicher > 1 ? "se" : ""} (in Klammern)`
             : ""
         }`}
       />
-      {!kangaroo && <WertungsartTabs wert={wertungsart} onWert={setWertungsart} />}
+      {!kangaroo && (
+        <div className="chip-row no-print">
+          {(Object.keys(WERTUNGSART_LABEL) as Wertungsart[]).map((art) => (
+            <button
+              key={art}
+              type="button"
+              className={`chip${wertungsart === art ? " is-active" : ""}`}
+              onClick={() => setWertungsart(art)}
+            >
+              {WERTUNGSART_LABEL[art]}
+            </button>
+          ))}
+        </div>
+      )}
       {aktiveStarts.length === 0 ? (
         <p>Noch kein Start zählt zur Gesamtwertung.</p>
       ) : (
         <>
           <div className="tabelle-scroll">
-            <table className="tabelle">
+            <table className="tabelle tabelle--mittig">
               <thead>
                 <tr>
                   <th>Platz</th>
-                  <th>Boot</th>
+                  <th className="spalte-links">Boot</th>
                   <th>Skipper</th>
                   <th>Verein</th>
                   <th>Bootstyp</th>
@@ -421,7 +516,7 @@ function GesamtPanel({ regatta }: { regatta: Regatta }) {
                 {wertung.map((zeile) => (
                   <tr key={zeile.boot.id}>
                     <td>{zeile.platz}</td>
-                    <td>{zeile.boot.name}</td>
+                    <td className="spalte-links">{zeile.boot.name}</td>
                     <td>{zeile.boot.skipper}</td>
                     <td>{zeile.boot.verein}</td>
                     <td>{zeile.boot.bootstyp}</td>
@@ -466,6 +561,13 @@ export function Wertungen() {
     <div>
       <h1 className="no-print">Wertungen</h1>
       <div className="chip-row no-print">
+        <button
+          type="button"
+          className={`chip${auswahl === "gesamt" ? " is-active" : ""}`}
+          onClick={() => setAuswahl("gesamt")}
+        >
+          Gesamtwertung
+        </button>
         {starts.map((start) => (
           <button
             key={start.id}
@@ -476,20 +578,13 @@ export function Wertungen() {
             {start.nummer}. {start.bezeichnung}
           </button>
         ))}
-        <button
-          type="button"
-          className={`chip${auswahl === "gesamt" ? " is-active" : ""}`}
-          onClick={() => setAuswahl("gesamt")}
-        >
-          Gesamtwertung
-        </button>
         <button type="button" className="chip chip--aktion" onClick={addStart}>
           + Start
         </button>
       </div>
 
       {aktiverStart ? (
-        <StartPanel regatta={aktiveRegatta} start={aktiverStart} />
+        <StartPanel key={aktiverStart.id} regatta={aktiveRegatta} start={aktiverStart} />
       ) : (
         <GesamtPanel regatta={aktiveRegatta} />
       )}

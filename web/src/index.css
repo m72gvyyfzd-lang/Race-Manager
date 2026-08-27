@@ -306,6 +306,12 @@ section.panel input[type="number"] {
   color: var(--text-h);
 }
 
+.stat-grid__zusatz {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  margin-top: 0.15rem;
+}
+
 /* --- Regatta-Karten --- */
 .card-grid {
   display: grid;
@@ -328,6 +334,15 @@ section.panel input[type="number"] {
 
 .regatta-card__symbol {
   font-size: 2rem;
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+}
+
+img.regatta-card__symbol-bild {
+  height: 3.5rem;
+  max-width: 6rem;
+  object-fit: contain;
 }
 
 .regatta-card__name {
@@ -367,8 +382,16 @@ section.panel input[type="number"] {
   padding: 0.3rem 0.5rem;
 }
 
+.symbol-btn img {
+  height: 3rem;
+  max-width: 5rem;
+  object-fit: contain;
+  display: block;
+}
+
 .symbol-btn.is-active {
   border-color: var(--akzent);
+  border-width: 2px;
   background: var(--row-alt);
 }
 
@@ -399,38 +422,145 @@ section.panel input[type="number"] {
 
 /* --- Listenkopf (Bildschirm & Druck) --- */
 .druck-kopf {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
   border-bottom: 2px solid var(--text-h);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
 
+.druck-kopf__banner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.druck-kopf__logo {
+  display: flex;
+  align-items: center;
+}
+
+.druck-kopf__logo--rechts {
+  justify-content: flex-end;
+}
+
+.druck-kopf__logo img,
+.druck-kopf__symbol {
+  height: 72px;
+  max-width: 130px;
+  object-fit: contain;
+}
+
+/* Emoji-Fallback für Alt-Daten */
+span.druck-kopf__symbol {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.druck-kopf__name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-h);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.druck-kopf__zeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
 .druck-kopf__titel {
-  margin: 0;
+  font-weight: 600;
+  color: var(--text-h);
+  font-size: 1.05rem;
 }
 
 .druck-kopf__untertitel {
-  margin: 0.2rem 0 0;
-  font-size: 0.9rem;
   opacity: 0.8;
 }
 
 .druck-kopf__meta {
   text-align: right;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.druck-kopf__regatta {
-  font-weight: 600;
-  color: var(--text-h);
+  opacity: 0.85;
 }
 
 .print-only {
   display: none;
+}
+
+/* --- Karteikarten (Start-Ansichten) --- */
+.karteireiter {
+  display: flex;
+  gap: 0.25rem;
+  margin: 1rem 0 0;
+}
+
+.karteireiter__tab {
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  padding: 0.5rem 1.1rem;
+  background: var(--row-alt);
+  opacity: 0.8;
+}
+
+.karteireiter__tab.is-active {
+  background: var(--bg);
+  opacity: 1;
+  font-weight: 600;
+  color: var(--text-h);
+  position: relative;
+  top: 1px;
+}
+
+.karteikarte {
+  border: 1px solid var(--border);
+  border-radius: 0 10px 10px 10px;
+  padding: 1rem 1.25rem;
+  background: var(--bg);
+}
+
+@media print {
+  .karteikarte {
+    border: none;
+    padding: 0;
+  }
+}
+
+/* --- Zentrierte Tabellen (Wertungen): alles mittig außer Boot --- */
+.tabelle--mittig th,
+.tabelle--mittig td {
+  text-align: center;
+}
+
+.tabelle--mittig th.spalte-links,
+.tabelle--mittig td.spalte-links {
+  text-align: left;
+}
+
+.tabelle--mittig td .time-input,
+.tabelle--mittig td .zelle {
+  text-align: center;
+}
+
+.tabelle--mittig .ziel-zelle {
+  justify-content: center;
+}
+
+/* --- schmale, zentrierte Spalten (z.B. Verein/Meldung in der Anmeldung) --- */
+.tabelle th.spalte-schmal,
+.tabelle td.spalte-schmal {
+  width: 7rem;
+  text-align: center;
+}
+
+.zelle--schmal {
+  width: 6rem;
+  text-align: center;
 }
 
 /* --- Druck --- */

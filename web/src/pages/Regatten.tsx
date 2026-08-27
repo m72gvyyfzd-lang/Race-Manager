@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import type { Regatta } from "@race-manager/core";
+import { RegattaSymbol } from "../components/RegattaSymbol";
 import { beispielRegatta } from "../data/beispiel";
-import { SYMBOLE } from "../data/symbole";
+import { REGATTA_LOGOS } from "../data/logos";
 import {
   backupIstVeraltet,
   exportiereAlle,
@@ -23,7 +24,7 @@ export function Regatten() {
   } = useData();
   const [formOffen, setFormOffen] = useState(false);
   const [name, setName] = useState("");
-  const [symbol, setSymbol] = useState(SYMBOLE[0]);
+  const [symbol, setSymbol] = useState(REGATTA_LOGOS[0].id);
   const [jahr, setJahr] = useState(new Date().getFullYear());
   const [datum, setDatum] = useState("");
   const dateiInput = useRef<HTMLInputElement>(null);
@@ -140,16 +141,17 @@ export function Regatten() {
             <input type="date" value={datum} onChange={(e) => setDatum(e.target.value)} />
           </label>
           <div>
-            <span className="form-label">Symbol</span>
+            <span className="form-label">Regatta-Logo</span>
             <div className="symbol-row">
-              {SYMBOLE.map((s) => (
+              {REGATTA_LOGOS.map((logo) => (
                 <button
-                  key={s}
+                  key={logo.id}
                   type="button"
-                  className={`symbol-btn${s === symbol ? " is-active" : ""}`}
-                  onClick={() => setSymbol(s)}
+                  title={logo.name}
+                  className={`symbol-btn${logo.id === symbol ? " is-active" : ""}`}
+                  onClick={() => setSymbol(logo.id)}
                 >
-                  {s}
+                  <img src={logo.url} alt={logo.name} />
                 </button>
               ))}
             </div>
@@ -176,7 +178,9 @@ export function Regatten() {
             className={`regatta-card${regatta.id === aktiveRegatta?.id ? " is-active" : ""}`}
             onClick={() => setAktiveRegattaId(regatta.id)}
           >
-            <div className="regatta-card__symbol">{regatta.symbol}</div>
+            <div className="regatta-card__symbol">
+              <RegattaSymbol symbol={regatta.symbol} className="regatta-card__symbol-bild" />
+            </div>
             <div className="regatta-card__name">
               {regatta.name} {regatta.jahr}
             </div>

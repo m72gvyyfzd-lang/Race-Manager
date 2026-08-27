@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
+import { RegattaSymbol } from "../components/RegattaSymbol";
 import { useData } from "../state/DataContext";
 import "./AppShell.css";
 
 const NAV_ITEMS = [
-  { to: "/teilnehmer", symbol: "👥", label: "Teilnehmer & Orga" },
-  { to: "/einstellungen", symbol: "⚙️", label: "Einstellungen" },
   { to: "/regatten", symbol: "🏆", label: "Regatten" },
+  { to: "/einstellungen", symbol: "⚙️", label: "Einstellungen" },
+  { to: "/teilnehmer", symbol: "👥", label: "Teilnehmer & Orga" },
   { to: "/wertungen", symbol: "🏁", label: "Wertungen" },
 ];
 
@@ -33,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
         {aktiveRegatta && (
           <div className="app-sidebar__regatta" title="Aktive Regatta">
-            <span className="app-sidebar__regatta-symbol">{aktiveRegatta.symbol}</span>
+            <RegattaSymbol symbol={aktiveRegatta.symbol} className="app-sidebar__regatta-symbol" />
             <span className="app-sidebar__regatta-name">
               {aktiveRegatta.name} {aktiveRegatta.jahr}
             </span>

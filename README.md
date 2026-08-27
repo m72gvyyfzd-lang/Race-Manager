@@ -16,23 +16,27 @@ deployment → Source* auf **"GitHub Actions"** stellen.
 
 ## Funktionsumfang
 
-- **Regatten**: mehrere Regatten mit Name + Symbol, Export/Import als
-  JSON-Datei (Datenaustausch zwischen Geräten), Komplett-Backup aller
-  Regatten mit Backup-Erinnerung, Import mit Vorschau, Beispiel-Regatta
-  mit den echten Daten der Helgoland Double 2025
-- **Teilnehmer & Orga**: Meldeliste mit Yardstick, Meldung/Meldegeld,
-  Essen-Zählern
-- **Wertungen**: beliebig viele Starts, Zeiterfassung mit
-  Ziffern-Schnelleingabe (`154023` → 15:40:23) und „Jetzt“-Stempel für
-  die Ziellinie, Startzeit für alle auf einmal, Sonderstatus
-  DNC/DNS/DSQ/DNF/RET/OCS (Punkte = gemeldete Boote + 1), manuelle
-  Punktvergabe und Bemerkungen durch die Wettfahrtleitung,
-  Ergebnislisten je Start nach gesegelter und berechneter Zeit,
+- **Regatten**: mehrere Regatten mit Name + Regatta-Logo und
+  Veranstalterlogo, Export/Import als JSON-Datei (Datenaustausch zwischen
+  Geräten), Komplett-Backup aller Regatten mit Backup-Erinnerung, Import
+  mit Vorschau, Beispiel-Regatta mit den echten Daten der Helgoland
+  Double 2025
+- **Teilnehmer & Orga**: Anmeldung (Regatta) mit Yardstick und
+  Meldung/Meldegeld, separate Anmeldungen (Essen) mit
+  Erwachsenen-/Kinder-Essen und Bezahlt-Status, Dashboard mit
+  Regatta- und Essen-Zählern
+- **Wertungen**: beliebig viele Starts, je Start Karteikarten mit
+  Startliste, Zeiterfassung, Ergebnis gesegelt und Ergebnis berechnet.
+  Zeiterfassung mit Ziffern-Schnelleingabe (`154023` → 15:40:23) und
+  „Jetzt“-Stempel für die Ziellinie, Startzeit für alle auf einmal,
+  Sonderstatus DNC/DNS/DSQ/DNF/RET/OCS (Punkte = gemeldete Boote + 1),
+  manuelle Punktvergabe und Bemerkungen durch die Wettfahrtleitung,
   Gesamtwertung mit Streichern (Gleichstand nach RRS Anhang A8),
-  druckfertige Listen mit Kopfzeile (A4 quer) über den Browserdruck
-- **Startmodus**: normaler Massenstart oder Kangaroo-Start
-  (Verfolgungsstart — individuelle Startzeiten aus Streckenzeit und
-  Yardstick, das langsamste Boot startet zuerst, Zieleinlauf = Platzierung)
+  druckfertige Listen mit Logo-Kopf (A4 quer) über den Browserdruck
+- **Startmodus**: Yardstick Regatta (gemeinsamer Start) oder
+  Kangaroo-Start (Verfolgungsstart — individuelle Startzeiten aus
+  Streckenzeit und Yardstick, das langsamste Boot startet zuerst,
+  Zieleinlauf = Platzierung)
 - Daten liegen lokal im Browser (localStorage); Weitergabe per Export/Import
 
 ## Projektstruktur

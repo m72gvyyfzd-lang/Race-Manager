@@ -33,7 +33,8 @@ export function beispielRegatta(): Regatta {
   return {
     id: "beispiel-helgoland-2025",
     name: "Helgoland Double",
-    symbol: "⛵",
+    symbol: "helgoland-double",
+    veranstalterLogo: "svb",
     jahr: 2025,
     datum: "2025-09-14",
     startmodus: "normal",

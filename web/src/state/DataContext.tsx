@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Boot, Regatta, Start, Zeiteintrag } from "@race-manager/core";
+import type { Boot, EssenAnmeldung, Regatta, Start, Zeiteintrag } from "@race-manager/core";
 import { ladeState, speichereState, type AppState } from "./storage";
 
 interface DataApi {
@@ -19,6 +19,9 @@ interface DataApi {
   addStart: () => void;
   updateStart: (startId: string, patch: Partial<Start>) => void;
   removeStart: (startId: string) => void;
+  addEssen: () => void;
+  updateEssen: (essenId: string, patch: Partial<EssenAnmeldung>) => void;
+  removeEssen: (essenId: string) => void;
   setZeit: (startId: string, bootId: string, patch: Partial<Omit<Zeiteintrag, "startId" | "bootId">>) => void;
 }
 
@@ -140,6 +143,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ...r,
         starts: r.starts.filter((s) => s.id !== startId),
         zeiten: r.zeiten.filter((z) => z.startId !== startId),
+      })),
+
+    addEssen: () =>
+      patchAktive((r) => ({
+        ...r,
+        essenAnmeldungen: [
+          ...(r.essenAnmeldungen ?? []),
+          { id: crypto.randomUUID(), name: "", essenErwachsen: 1, essenKind: 0, bezahlt: false },
+        ],
+      })),
+
+    updateEssen: (essenId, patch) =>
+      patchAktive((r) => ({
+        ...r,
+        essenAnmeldungen: (r.essenAnmeldungen ?? []).map((e) =>
+          e.id === essenId ? { ...e, ...patch } : e,
+        ),
+      })),
+
+    removeEssen: (essenId) =>
+      patchAktive((r) => ({
+        ...r,
+        essenAnmeldungen: (r.essenAnmeldungen ?? []).filter((e) => e.id !== essenId),
       })),
 
     setZeit: (startId, bootId, patch) =>

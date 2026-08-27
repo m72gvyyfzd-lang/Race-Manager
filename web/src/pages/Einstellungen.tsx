@@ -1,6 +1,6 @@
 import { maxStreicher } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
-import { SYMBOLE } from "../data/symbole";
+import { REGATTA_LOGOS, VERANSTALTER_LOGOS } from "../data/logos";
 import { useData } from "../state/DataContext";
 
 export function Einstellungen() {
@@ -14,7 +14,7 @@ export function Einstellungen() {
     <div>
       <h1>Einstellungen</h1>
       <p className="hinweis">
-        Gilt für die aktive Regatta: {regatta.symbol} {regatta.name} {regatta.jahr}
+        Gilt für die aktive Regatta: {regatta.name} {regatta.jahr}
       </p>
 
       <section className="panel form-grid">
@@ -43,16 +43,40 @@ export function Einstellungen() {
           />
         </label>
         <div>
-          <span className="form-label">Symbol</span>
+          <span className="form-label">Regatta-Logo</span>
           <div className="symbol-row">
-            {SYMBOLE.map((s) => (
+            {REGATTA_LOGOS.map((logo) => (
               <button
-                key={s}
+                key={logo.id}
                 type="button"
-                className={`symbol-btn${s === regatta.symbol ? " is-active" : ""}`}
-                onClick={() => updateRegatta(regatta.id, { symbol: s })}
+                title={logo.name}
+                className={`symbol-btn${logo.id === regatta.symbol ? " is-active" : ""}`}
+                onClick={() => updateRegatta(regatta.id, { symbol: logo.id })}
               >
-                {s}
+                <img src={logo.url} alt={logo.name} />
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span className="form-label">Veranstalterlogo</span>
+          <div className="symbol-row">
+            <button
+              type="button"
+              className={`symbol-btn${!regatta.veranstalterLogo ? " is-active" : ""}`}
+              onClick={() => updateRegatta(regatta.id, { veranstalterLogo: undefined })}
+            >
+              keins
+            </button>
+            {VERANSTALTER_LOGOS.map((logo) => (
+              <button
+                key={logo.id}
+                type="button"
+                title={logo.name}
+                className={`symbol-btn${logo.id === regatta.veranstalterLogo ? " is-active" : ""}`}
+                onClick={() => updateRegatta(regatta.id, { veranstalterLogo: logo.id })}
+              >
+                <img src={logo.url} alt={logo.name} />
               </button>
             ))}
           </div>
@@ -69,8 +93,8 @@ export function Einstellungen() {
             onChange={() => updateRegatta(regatta.id, { startmodus: "normal" })}
           />
           <span>
-            <strong>Normal</strong> — alle Boote starten zur gleichen Zeit, gewertet wird nach
-            gesegelter und nach Yardstick-berechneter Zeit.
+            <strong>Yardstick Regatta</strong> — alle Boote starten zur gleichen Zeit, gewertet
+            wird nach gesegelter und nach Yardstick-berechneter Zeit.
           </span>
         </label>
         <label className="radio-label">

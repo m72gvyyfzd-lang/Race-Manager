@@ -77,6 +77,16 @@
 .app-sidebar__regatta-symbol {
   display: block;
   font-size: 1.4rem;
+  margin: 0 auto 0.25rem;
+}
+
+img.app-sidebar__regatta-symbol {
+  height: 2.6rem;
+  max-width: 4.5rem;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 6px;
+  padding: 2px;
 }
 
 .app-content {

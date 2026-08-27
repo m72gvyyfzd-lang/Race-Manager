@@ -7,14 +7,16 @@ function TextZelle({
   wert,
   onWert,
   breit,
+  mittig,
 }: {
   wert: string;
   onWert: (wert: string) => void;
   breit?: boolean;
+  mittig?: boolean;
 }) {
   return (
     <input
-      className={breit ? "zelle zelle--breit" : "zelle"}
+      className={`zelle${breit ? " zelle--breit" : ""}${mittig ? " zelle--schmal" : ""}`}
       value={wert}
       onChange={(e) => onWert(e.target.value)}
     />
@@ -22,34 +24,47 @@ function TextZelle({
 }
 
 export function Teilnehmer() {
-  const { aktiveRegatta, addBoot, updateBoot, removeBoot } = useData();
+  const { aktiveRegatta, addBoot, updateBoot, removeBoot, addEssen, updateEssen, removeEssen } =
+    useData();
   if (!aktiveRegatta) return <KeineRegatta />;
 
   const boote = aktiveRegatta.boote;
-  const meldungen = boote.filter((b) => b.meldungErhalten).length;
-  const bezahlt = boote.filter((b) => b.meldegeldBezahlt).length;
-  const essen = boote.reduce((sum, b) => sum + b.anzahlEssen, 0);
-  const essenBezahlt = boote.filter((b) => b.essenBezahlt).reduce((sum, b) => sum + b.anzahlEssen, 0);
+  const essenListe = aktiveRegatta.essenAnmeldungen ?? [];
 
-  const feld = (boot: Boot, key: "name" | "skipper" | "crew" | "verein" | "bootstyp") => (
+  const meldungen = boote.filter((b) => b.meldungErhalten).length;
+  const meldungenBezahlt = boote.filter((b) => b.meldegeldBezahlt).length;
+  const essenErwachsen = essenListe.reduce((sum, e) => sum + e.essenErwachsen, 0);
+  const essenKind = essenListe.reduce((sum, e) => sum + e.essenKind, 0);
+  const essenBezahlt = essenListe
+    .filter((e) => e.bezahlt)
+    .reduce((sum, e) => sum + e.essenErwachsen + e.essenKind, 0);
+
+  const feld = (boot: Boot, key: "name" | "skipper" | "crew" | "bootstyp") => (
     <TextZelle wert={boot[key]} onWert={(wert) => updateBoot(boot.id, { [key]: wert })} />
   );
 
   return (
     <div>
-      <PrintKopf regatta={aktiveRegatta} titel="Meldeliste" />
+      <PrintKopf regatta={aktiveRegatta} titel="Anmeldung (Regatta)" />
 
       <dl className="stat-grid no-print">
         <div className="stat-grid__item">
-          <dt>Meldungen (bezahlt)</dt>
-          <dd>
-            {meldungen} ({bezahlt})
-          </dd>
+          <dt>Regatta: Meldungen</dt>
+          <dd>{meldungen}</dd>
+          <div className="stat-grid__zusatz">davon bezahlt: {meldungenBezahlt}</div>
         </div>
         <div className="stat-grid__item">
-          <dt>Essen (bezahlt)</dt>
+          <dt>Essen: Erwachsene</dt>
+          <dd>{essenErwachsen}</dd>
+        </div>
+        <div className="stat-grid__item">
+          <dt>Essen: Kinder</dt>
+          <dd>{essenKind}</dd>
+        </div>
+        <div className="stat-grid__item">
+          <dt>Essen: bezahlt</dt>
           <dd>
-            {essen} ({essenBezahlt})
+            {essenBezahlt} / {essenErwachsen + essenKind}
           </dd>
         </div>
       </dl>
@@ -62,13 +77,15 @@ export function Teilnehmer() {
               <th>Bootsname</th>
               <th>Skipper</th>
               <th>Crew</th>
-              <th>Verein</th>
               <th>Bootstyp</th>
               <th>Yardstick</th>
-              <th title="Meldung erhalten">Meldung</th>
-              <th title="Meldegeld bezahlt">Meldegeld</th>
-              <th title="Anzahl Essen">Essen</th>
-              <th title="Essen bezahlt">Essen bez.</th>
+              <th className="spalte-schmal">Verein</th>
+              <th className="spalte-schmal" title="Meldung erhalten">
+                Meldung
+              </th>
+              <th className="spalte-schmal" title="Meldegeld bezahlt">
+                Meldegeld
+              </th>
               <th>Bemerkung</th>
               <th className="no-print"></th>
             </tr>
@@ -80,7 +97,6 @@ export function Teilnehmer() {
                 <td>{feld(boot, "name")}</td>
                 <td>{feld(boot, "skipper")}</td>
                 <td>{feld(boot, "crew")}</td>
-                <td>{feld(boot, "verein")}</td>
                 <td>{feld(boot, "bootstyp")}</td>
                 <td>
                   <input
@@ -88,37 +104,29 @@ export function Teilnehmer() {
                     type="number"
                     min={1}
                     value={boot.yardstick}
+                    onFocus={(e) => e.currentTarget.select()}
                     onChange={(e) => updateBoot(boot.id, { yardstick: Number(e.target.value) || 100 })}
                   />
                 </td>
-                <td className="mittig">
+                <td className="spalte-schmal">
+                  <TextZelle
+                    mittig
+                    wert={boot.verein}
+                    onWert={(wert) => updateBoot(boot.id, { verein: wert })}
+                  />
+                </td>
+                <td className="spalte-schmal">
                   <input
                     type="checkbox"
                     checked={boot.meldungErhalten}
                     onChange={(e) => updateBoot(boot.id, { meldungErhalten: e.target.checked })}
                   />
                 </td>
-                <td className="mittig">
+                <td className="spalte-schmal">
                   <input
                     type="checkbox"
                     checked={boot.meldegeldBezahlt}
                     onChange={(e) => updateBoot(boot.id, { meldegeldBezahlt: e.target.checked })}
-                  />
-                </td>
-                <td>
-                  <input
-                    className="zelle zelle--zahl"
-                    type="number"
-                    min={0}
-                    value={boot.anzahlEssen}
-                    onChange={(e) => updateBoot(boot.id, { anzahlEssen: Number(e.target.value) || 0 })}
-                  />
-                </td>
-                <td className="mittig">
-                  <input
-                    type="checkbox"
-                    checked={boot.essenBezahlt}
-                    onChange={(e) => updateBoot(boot.id, { essenBezahlt: e.target.checked })}
                   />
                 </td>
                 <td>
@@ -155,6 +163,92 @@ export function Teilnehmer() {
           Drucken / PDF
         </button>
       </div>
+
+      <section>
+        <h2>Anmeldungen (Essen)</h2>
+        <div className="tabelle-scroll">
+          <table className="tabelle">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th className="spalte-schmal">Essen Erwachsen</th>
+                <th className="spalte-schmal">Essen Kind</th>
+                <th className="spalte-schmal">Bezahlt</th>
+                <th>Bemerkungen</th>
+                <th className="no-print"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {essenListe.map((eintrag) => (
+                <tr key={eintrag.id}>
+                  <td>
+                    <TextZelle
+                      wert={eintrag.name}
+                      onWert={(wert) => updateEssen(eintrag.id, { name: wert })}
+                    />
+                  </td>
+                  <td className="spalte-schmal">
+                    <input
+                      className="zelle zelle--zahl"
+                      type="number"
+                      min={0}
+                      value={eintrag.essenErwachsen}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onChange={(e) =>
+                        updateEssen(eintrag.id, { essenErwachsen: Number(e.target.value) || 0 })
+                      }
+                    />
+                  </td>
+                  <td className="spalte-schmal">
+                    <input
+                      className="zelle zelle--zahl"
+                      type="number"
+                      min={0}
+                      value={eintrag.essenKind}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onChange={(e) =>
+                        updateEssen(eintrag.id, { essenKind: Number(e.target.value) || 0 })
+                      }
+                    />
+                  </td>
+                  <td className="spalte-schmal">
+                    <input
+                      type="checkbox"
+                      checked={eintrag.bezahlt}
+                      onChange={(e) => updateEssen(eintrag.id, { bezahlt: e.target.checked })}
+                    />
+                  </td>
+                  <td>
+                    <TextZelle
+                      breit
+                      wert={eintrag.bemerkung ?? ""}
+                      onWert={(wert) => updateEssen(eintrag.id, { bemerkung: wert || undefined })}
+                    />
+                  </td>
+                  <td className="no-print">
+                    <button
+                      type="button"
+                      className="danger"
+                      onClick={() => {
+                        if (window.confirm(`Essen-Anmeldung „${eintrag.name || "ohne Namen"}“ löschen?`)) {
+                          removeEssen(eintrag.id);
+                        }
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="button-row no-print">
+          <button type="button" className="primary" onClick={addEssen}>
+            + Essen-Anmeldung
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
