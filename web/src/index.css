@@ -712,6 +712,40 @@ span.druck-kopf__symbol {
   background: var(--bg);
 }
 
+/* Karteikarte ohne Reiterleiste (z.B. Kangaroo: nur eine Wertungsart) */
+.karteikarte--voll {
+  border-radius: 10px;
+}
+
+/* --- Wertungen: Navigations- und Start-Kachel --- */
+.kachel--nav {
+  margin-bottom: 1rem;
+}
+
+.chip-row--kompakt {
+  margin: 0;
+}
+
+/* Feste Höhe, damit der Inhalt beim Umschalten zwischen Gesamtwertung
+   und einem Start nicht springt — der Platzhalter ist genauso hoch. */
+.start-kachel {
+  min-height: 6.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.start-kachel .form-grid {
+  margin: 0;
+}
+
+.start-kachel .button-row {
+  margin: 0;
+}
+
+.start-kachel--platzhalter {
+  visibility: hidden;
+}
+
 @media print {
   .karteikarte {
     border: none;

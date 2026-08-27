@@ -404,12 +404,14 @@ function GesamtPanel({
   return (
     <div>
       {!kangaroo && (
-        <div className="chip-row no-print">
+        <div className="karteireiter no-print" role="tablist">
           {(Object.keys(WERTUNGSART_LABEL) as Wertungsart[]).map((art) => (
             <button
               key={art}
               type="button"
-              className={`chip${wertungsart === art ? " is-active" : ""}`}
+              role="tab"
+              aria-selected={wertungsart === art}
+              className={`karteireiter__tab${wertungsart === art ? " is-active" : ""}`}
               onClick={() => onWertungsart(art)}
             >
               {WERTUNGSART_LABEL[art]}
@@ -417,6 +419,7 @@ function GesamtPanel({
           ))}
         </div>
       )}
+      <div className={`karteikarte${kangaroo ? " karteikarte--voll" : ""}`}>
       {aktiveStarts.length === 0 ? (
         <p>Noch kein Start zählt zur Gesamtwertung.</p>
       ) : (
@@ -470,6 +473,7 @@ function GesamtPanel({
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }
@@ -516,32 +520,34 @@ export function Wertungen() {
         untertitel={untertitel}
       />
 
-      <div className="chip-row no-print">
-        <button
-          type="button"
-          className={`chip${auswahl === "gesamt" ? " is-active" : ""}`}
-          onClick={() => setAuswahl("gesamt")}
-        >
-          Gesamtwertung
-        </button>
-        {starts.map((s) => (
+      <section className="kachel kachel--nav no-print">
+        <div className="chip-row chip-row--kompakt">
           <button
-            key={s.id}
             type="button"
-            className={`chip${auswahl === s.id ? " is-active" : ""}${s.aktiv ? "" : " is-inaktiv"}`}
-            onClick={() => setAuswahl(s.id)}
+            className={`chip${auswahl === "gesamt" ? " is-active" : ""}`}
+            onClick={() => setAuswahl("gesamt")}
           >
-            {s.nummer}. {s.bezeichnung}
+            Gesamtwertung
           </button>
-        ))}
-        <button type="button" className="chip chip--aktion" onClick={addStart}>
-          + Start
-        </button>
-      </div>
+          {starts.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={`chip${auswahl === s.id ? " is-active" : ""}${s.aktiv ? "" : " is-inaktiv"}`}
+              onClick={() => setAuswahl(s.id)}
+            >
+              {s.nummer}. {s.bezeichnung}
+            </button>
+          ))}
+          <button type="button" className="chip chip--aktion" onClick={addStart}>
+            + Start
+          </button>
+        </div>
+      </section>
 
       {start ? (
-        <div>
-          <div className="panel form-grid no-print">
+        <section className="kachel start-kachel no-print">
+          <div className="form-grid">
             <label>
               Bezeichnung
               <input
@@ -572,7 +578,14 @@ export function Wertungen() {
               </button>
             </div>
           </div>
+        </section>
+      ) : (
+        /* Platzhalter gleicher Höhe: so springt der Inhalt beim Umschalten nicht */
+        <div className="kachel start-kachel start-kachel--platzhalter no-print" aria-hidden="true" />
+      )}
 
+      {start ? (
+        <div>
           <div className="karteireiter no-print" role="tablist">
             {START_TABS.map((t) => (
               <button
