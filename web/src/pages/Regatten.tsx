@@ -28,7 +28,6 @@ export function Regatten() {
   const [symbol, setSymbol] = useState("");
   const [veranstalterLogo, setVeranstalterLogo] = useState<string | undefined>(undefined);
   const dateiInput = useRef<HTMLInputElement>(null);
-  const nameInput = useRef<HTMLInputElement>(null);
 
   // backupTick erzwingt nach einem Export das Neu-Lesen des Backup-Zeitpunkts
   const [, setBackupTick] = useState(0);
@@ -87,21 +86,10 @@ export function Regatten() {
         <section className="kachel">
           <div className="kachel__kopf">
             <h2>Neue Regatta</h2>
-            <button
-              type="button"
-              className="primary btn-viertel"
-              onClick={() => {
-                formZuruecksetzen();
-                nameInput.current?.focus();
-              }}
-            >
-              + neue Regatta
-            </button>
           </div>
 
           <div className="neue-regatta__ebene1">
             <input
-              ref={nameInput}
               className="eingabe-zentriert neue-regatta__name"
               type="text"
               value={name}
@@ -239,7 +227,7 @@ export function Regatten() {
       <hr className="trenner no-print" />
 
       {regatten.length === 0 && (
-        <p>Noch keine Regatta angelegt — starte mit „+ neue Regatta“ oder lade das Beispiel.</p>
+        <p>Noch keine Regatta angelegt — lege oben eine an oder lade das Beispiel.</p>
       )}
 
       <div className="card-grid">
