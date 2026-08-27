@@ -729,21 +729,140 @@ span.druck-kopf__symbol {
 /* Feste Höhe, damit der Inhalt beim Umschalten zwischen Gesamtwertung
    und einem Start nicht springt — der Platzhalter ist genauso hoch. */
 .start-kachel {
-  min-height: 6.5rem;
+  min-height: 10rem;
   justify-content: center;
   margin-bottom: 1rem;
 }
 
-.start-kachel .form-grid {
-  margin: 0;
-}
-
-.start-kachel .button-row {
-  margin: 0;
-}
-
 .start-kachel--platzhalter {
   visibility: hidden;
+}
+
+/* Zwei Zeilen: links Bezeichnung über dem Wertungs-Häkchen, daneben zwei
+   kontextabhängige Spalten (Massenstart bzw. Kangaroo-Angaben), rechts
+   mittig der Löschen-Button. */
+.start-kachel__grid {
+  display: grid;
+  grid-template-columns: 15rem 12rem 12rem 1fr;
+  grid-template-rows: auto auto;
+  gap: 0.75rem 1.25rem;
+  align-items: end;
+}
+
+.start-kachel__grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.start-kachel__grid .form-label {
+  margin: 0;
+  text-align: left;
+}
+
+.start-kachel__bezeichnung {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.start-kachel__bezeichnung input {
+  width: 100%;
+}
+
+.start-kachel__haken {
+  grid-column: 1;
+  grid-row: 2;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+}
+
+.start-kachel__feld-b1 {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.start-kachel__feld-b2 {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.start-kachel__feld-c1 {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.start-kachel__feld-c2 {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.start-kachel__jetzt button {
+  width: 100%;
+}
+
+/* "Für alle übernehmen" spannt über beide Felder-Spalten und schließt
+   rechts mit dem Jetzt-Button ab. */
+.start-kachel__breit {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+  width: 100%;
+}
+
+.start-kachel__loeschen {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  align-self: center;
+}
+
+.start-kachel__grid .time-input {
+  width: 100%;
+  text-align: center;
+}
+
+/* Dezimalfeld mit Einheit (Strecke, Geschwindigkeit) */
+.dezimal-feld {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dezimal-feld__input {
+  width: 100%;
+  min-width: 0;
+  text-align: right;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dezimal-feld__einheit {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+@media (max-width: 1000px) {
+  .start-kachel__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .start-kachel__bezeichnung,
+  .start-kachel__haken,
+  .start-kachel__feld-b1,
+  .start-kachel__feld-b2,
+  .start-kachel__feld-c1,
+  .start-kachel__feld-c2,
+  .start-kachel__breit,
+  .start-kachel__loeschen {
+    grid-column: auto;
+    grid-row: auto;
+    justify-self: stretch;
+  }
 }
 
 @media print {

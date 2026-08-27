@@ -1,5 +1,16 @@
 import type { Boot } from "./types";
 
+/**
+ * Kalkulierte Streckenzeit in Sekunden aus Streckenlänge (sm) und
+ * angenommener Durchschnittsgeschwindigkeit (kn) — die Basiszeit eines
+ * Yardstick-100-Boots für den Kangaroo-Start.
+ * Liefert null, solange die Angaben unvollständig oder unbrauchbar sind.
+ */
+export function streckenzeitSek(streckeNm?: number, schnittKn?: number): number | null {
+  if (!streckeNm || !schnittKn || streckeNm <= 0 || schnittKn <= 0) return null;
+  return Math.round((streckeNm / schnittKn) * 3600);
+}
+
 export interface KangarooStartzeile {
   boot: Boot;
   /** Verzögerung gegenüber der geplanten (ersten) Startzeit in Sekunden */

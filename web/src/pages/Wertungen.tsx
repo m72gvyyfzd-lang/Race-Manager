@@ -6,11 +6,13 @@ import {
   formatUhrzeit,
   kangarooStartzeiten,
   maxStreicher,
+  streckenzeitSek,
   type Regatta,
   type Sonderstatus,
   type Start,
   type Wertungsart,
 } from "@race-manager/core";
+import { DezimalInput } from "../components/DezimalInput";
 import { KeineRegatta } from "../components/KeineRegatta";
 import { PrintKopf } from "../components/PrintKopf";
 import { TimeInput } from "../components/TimeInput";
@@ -49,7 +51,6 @@ function wertungsTitel(regatta: Regatta, wertungsart: Wertungsart): string {
 }
 
 function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
-  const { updateStart } = useData();
   const kangaroo = regatta.startmodus === "kangaroo";
 
   const startliste =
@@ -63,25 +64,6 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
 
   return (
     <div>
-      {kangaroo && (
-        <div className="form-grid no-print" style={{ marginBottom: "1rem" }}>
-          <label>
-            Geplante Startzeit (1. Boot)
-            <TimeInput
-              wert={start.geplanteStartzeit}
-              onWert={(wert) => updateStart(start.id, { geplanteStartzeit: wert })}
-            />
-          </label>
-          <label>
-            Kalkulierte Streckenzeit (YS 100)
-            <TimeInput
-              wert={start.basiszeit}
-              onWert={(wert) => updateStart(start.id, { basiszeit: wert })}
-              placeholder="z.B. 23000 für 2:30:00"
-            />
-          </label>
-        </div>
-      )}
       {kangaroo ? (
         startliste ? (
           <div className="tabelle-scroll">
@@ -158,7 +140,6 @@ function StartlisteTab({ regatta, start }: { regatta: Regatta; start: Start }) {
 
 function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }) {
   const { setZeit } = useData();
-  const [massenstart, setMassenstart] = useState<number | undefined>(undefined);
   const kangaroo = regatta.startmodus === "kangaroo";
   const boote = [...regatta.boote].sort((a, b) => a.name.localeCompare(b.name, "de"));
 
@@ -172,23 +153,6 @@ function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }
 
   const ergebnis = berechneStartErgebnis(regatta, start, "gesegelt");
 
-  const massenstartUebernehmen = () => {
-    if (massenstart === undefined) return;
-    const abweichend = boote.some((b) => {
-      const s = eintrag(b.id)?.startzeit;
-      return s !== undefined && s !== massenstart;
-    });
-    if (
-      abweichend &&
-      !window.confirm("Einzelne Boote haben bereits abweichende Startzeiten — alle überschreiben?")
-    ) {
-      return;
-    }
-    for (const boot of boote) {
-      setZeit(start.id, boot.id, { startzeit: massenstart });
-    }
-  };
-
   return (
     <div className="no-print">
       <p className="hinweis">
@@ -196,23 +160,6 @@ function ZeiterfassungTab({ regatta, start }: { regatta: Regatta; start: Start }
         einfach <strong>Jetzt</strong> antippen.
         {kangaroo && " Startzeiten kommen aus der Startliste, nur bei Abweichung überschreiben."}
       </p>
-      {!kangaroo && (
-        <div className="massenstart">
-          <span>Startzeit für alle:</span>
-          <TimeInput wert={massenstart} onWert={setMassenstart} />
-          <button type="button" onClick={() => setMassenstart(jetztSekunden())}>
-            Jetzt
-          </button>
-          <button
-            type="button"
-            className="primary"
-            disabled={massenstart === undefined}
-            onClick={massenstartUebernehmen}
-          >
-            Für alle übernehmen
-          </button>
-        </div>
-      )}
       <div className="tabelle-scroll">
         <table className="tabelle tabelle--mittig">
           <thead>
@@ -479,15 +426,52 @@ function GesamtPanel({
 }
 
 export function Wertungen() {
-  const { aktiveRegatta, addStart, updateStart, removeStart } = useData();
+  const { aktiveRegatta, addStart, updateStart, removeStart, setZeit } = useData();
   const [auswahl, setAuswahl] = useState<string>("gesamt");
   const [tab, setTab] = useState<StartTabId>("zeiten");
   const [wertungsart, setWertungsart] = useState<Wertungsart>("gesegelt");
+  const [massenstart, setMassenstart] = useState<number | undefined>(undefined);
   if (!aktiveRegatta) return <KeineRegatta />;
 
   const regatta = aktiveRegatta;
+  const kangaroo = regatta.startmodus === "kangaroo";
   const starts = [...regatta.starts].sort((a, b) => a.nummer - b.nummer);
   const start = starts.find((s) => s.id === auswahl);
+
+  // Die Kachel zeigt je nach Startmodus und Reiter die passenden Felder
+  const zeigeMassenstart = !!start && !kangaroo && tab === "zeiten";
+  const zeigeKangarooFelder = !!start && kangaroo && tab === "startliste";
+
+  const massenstartUebernehmen = () => {
+    if (!start || massenstart === undefined) return;
+    const abweichend = regatta.boote.some((b) => {
+      const s = regatta.zeiten.find((z) => z.startId === start.id && z.bootId === b.id)?.startzeit;
+      return s !== undefined && s !== massenstart;
+    });
+    if (
+      abweichend &&
+      !window.confirm("Einzelne Boote haben bereits abweichende Startzeiten — alle überschreiben?")
+    ) {
+      return;
+    }
+    for (const boot of regatta.boote) {
+      setZeit(start.id, boot.id, { startzeit: massenstart });
+    }
+  };
+
+  /** Strecke bzw. Schnitt ändern und daraus — wenn beide vorliegen — die
+   *  Streckenzeit (Basiszeit) berechnen. */
+  const setStrecke = (patch: { streckeNm?: number; schnittKn?: number }) => {
+    if (!start) return;
+    const streckeNm = "streckeNm" in patch ? patch.streckeNm : start.streckeNm;
+    const schnittKn = "schnittKn" in patch ? patch.schnittKn : start.schnittKn;
+    const basiszeit = streckenzeitSek(streckeNm, schnittKn);
+    updateStart(start.id, {
+      streckeNm,
+      schnittKn,
+      ...(basiszeit !== null ? { basiszeit } : {}),
+    });
+  };
 
   // Listentitel unter der Trennlinie — richtet sich nach Auswahl und Reiter,
   // der Kopf darüber bleibt beim Umschalten unverändert stehen.
@@ -547,15 +531,15 @@ export function Wertungen() {
 
       {start ? (
         <section className="kachel start-kachel no-print">
-          <div className="form-grid">
-            <label>
-              Bezeichnung
+          <div className="start-kachel__grid">
+            <label className="start-kachel__bezeichnung">
+              <span className="form-label">Bezeichnung</span>
               <input
                 value={start.bezeichnung}
                 onChange={(e) => updateStart(start.id, { bezeichnung: e.target.value })}
               />
             </label>
-            <label className="check-label">
+            <label className="start-kachel__haken check-label">
               <input
                 type="checkbox"
                 checked={start.aktiv}
@@ -563,7 +547,65 @@ export function Wertungen() {
               />
               zählt zur Gesamtwertung
             </label>
-            <div className="button-row">
+
+            {zeigeMassenstart && (
+              <>
+                <label className="start-kachel__feld-b1">
+                  <span className="form-label">Startzeit für alle :</span>
+                  <TimeInput wert={massenstart} onWert={setMassenstart} />
+                </label>
+                <div className="start-kachel__feld-c1 start-kachel__jetzt">
+                  <button type="button" onClick={() => setMassenstart(jetztSekunden())}>
+                    Jetzt
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="primary start-kachel__breit"
+                  disabled={massenstart === undefined}
+                  onClick={massenstartUebernehmen}
+                >
+                  Für alle übernehmen
+                </button>
+              </>
+            )}
+
+            {zeigeKangarooFelder && (
+              <>
+                <label className="start-kachel__feld-b1">
+                  <span className="form-label">gepl. Startzeit 0-Boot :</span>
+                  <TimeInput
+                    wert={start.geplanteStartzeit}
+                    onWert={(wert) => updateStart(start.id, { geplanteStartzeit: wert })}
+                  />
+                </label>
+                <label className="start-kachel__feld-b2">
+                  <span className="form-label">Streckenzeit YS 100 :</span>
+                  <TimeInput
+                    wert={start.basiszeit}
+                    onWert={(wert) => updateStart(start.id, { basiszeit: wert })}
+                  />
+                </label>
+                <label className="start-kachel__feld-c1">
+                  <span className="form-label">Strecke :</span>
+                  <DezimalInput
+                    einheit="nm"
+                    wert={start.streckeNm}
+                    onWert={(wert) => setStrecke({ streckeNm: wert })}
+                  />
+                </label>
+                <label className="start-kachel__feld-c2">
+                  <span className="form-label">⌀ Geschw. :</span>
+                  <DezimalInput
+                    einheit="kn"
+                    wert={start.schnittKn}
+                    onWert={(wert) => setStrecke({ schnittKn: wert })}
+                  />
+                </label>
+              </>
+            )}
+
+            <div className="start-kachel__loeschen">
               <button
                 type="button"
                 className="danger"

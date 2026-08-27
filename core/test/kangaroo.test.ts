@@ -1,11 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { kangarooStartzeiten } from "../src/kangaroo";
+import { kangarooStartzeiten, streckenzeitSek } from "../src/kangaroo";
 import { berechneStartErgebnis } from "../src/wettfahrt";
 import { formatUhrzeit } from "../src/zeit";
 import type { Regatta } from "../src/types";
 import { boote } from "./fixtures/helgoland2025";
 
 const hms = (h: number, m: number, s = 0) => h * 3600 + m * 60 + s;
+
+describe("streckenzeitSek", () => {
+  it("rechnet Strecke und Schnitt in eine Streckenzeit um", () => {
+    expect(streckenzeitSek(12, 6)).toBe(7200); // 12 sm bei 6 kn = 2 h
+    expect(streckenzeitSek(18.5, 5.5)).toBe(Math.round((18.5 / 5.5) * 3600));
+  });
+
+  it("liefert null bei unvollständigen oder unbrauchbaren Angaben", () => {
+    expect(streckenzeitSek(undefined, 6)).toBeNull();
+    expect(streckenzeitSek(12, undefined)).toBeNull();
+    expect(streckenzeitSek(12, 0)).toBeNull();
+    expect(streckenzeitSek(-3, 6)).toBeNull();
+  });
+});
 
 describe("kangarooStartzeiten", () => {
   it("lässt das langsamste Boot zuerst starten, schnellere entsprechend später", () => {

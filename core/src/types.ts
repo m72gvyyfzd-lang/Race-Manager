@@ -40,6 +40,10 @@ export interface Start {
   geplanteStartzeit?: number;
   /** Kangaroo: kalkulierte Streckenzeit eines Yardstick-100-Boots in Sekunden */
   basiszeit?: number;
+  /** Kangaroo: Streckenlänge in Seemeilen — Grundlage für die Streckenzeit */
+  streckeNm?: number;
+  /** Kangaroo: angenommene Durchschnittsgeschwindigkeit in Knoten */
+  schnittKn?: number;
 }
 
 /** Erfasste Zeiten eines Boots in einem Start. Alle Zeiten in Sek. seit Mitternacht. */
