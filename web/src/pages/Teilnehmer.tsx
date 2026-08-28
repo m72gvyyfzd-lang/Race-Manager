@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Boot } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
 import { PrintKopf } from "../components/PrintKopf";
@@ -36,6 +36,15 @@ export function Teilnehmer() {
   const { aktiveRegatta, addBoot, updateBoot, removeBoot, addEssen, updateEssen, removeEssen } =
     useData();
   const [tab, setTab] = useState<TabId>("regatta");
+  // Hebt die noch nicht bezahlten Essen-Anmeldungen kurz hervor
+  const [hebeOffeneHervor, setHebeOffeneHervor] = useState(false);
+
+  useEffect(() => {
+    if (!hebeOffeneHervor) return;
+    const timer = setTimeout(() => setHebeOffeneHervor(false), 5000);
+    return () => clearTimeout(timer);
+  }, [hebeOffeneHervor]);
+
   if (!aktiveRegatta) return <KeineRegatta />;
 
   const boote = aktiveRegatta.boote;
@@ -49,6 +58,15 @@ export function Teilnehmer() {
   const essenOffen = essenListe
     .filter((e) => !e.bezahlt)
     .reduce((sum, e) => sum + e.essenErwachsen + e.essenKind, 0);
+
+  /** Springt in die Essen-Liste und hebt die offenen Zahlungen hervor. */
+  const zeigeOffeneEssen = () => {
+    setTab("essen");
+    setHebeOffeneHervor(false);
+    // im nächsten Frame neu setzen, damit die Animation auch bei
+    // wiederholtem Klick erneut startet
+    requestAnimationFrame(() => setHebeOffeneHervor(true));
+  };
 
   const feld = (boot: Boot, key: "name" | "skipper" | "crew") => (
     <TextZelle voll wert={boot[key]} onWert={(wert) => updateBoot(boot.id, { [key]: wert })} />
@@ -64,9 +82,7 @@ export function Teilnehmer() {
 
       <div className="orga-dashboard no-print">
         <section className="kachel orga-kachel">
-          <div className="kachel__kopf">
-            <h2>Racing…</h2>
-          </div>
+          <h2 className="kachel__legende">Racing…</h2>
           <dl className="orga-werte">
             <div className="orga-wert">
               <dt>angemeldete Boote :</dt>
@@ -93,33 +109,34 @@ export function Teilnehmer() {
           </dl>
         </section>
         <section className="kachel orga-kachel">
-          <div className="kachel__kopf">
-            <h2>Essen…</h2>
-          </div>
+          <h2 className="kachel__legende">Party…</h2>
           <dl className="orga-werte">
-            <div className="orga-wert">
-              <dt>Erwachsene :</dt>
-              <dd>{essenErwachsen}</dd>
-            </div>
-            <div className="orga-wert">
-              <dt>Kinder :</dt>
-              <dd>{essenKind}</dd>
-            </div>
             <div className="orga-wert">
               <dt>Essen gesamt :</dt>
               <dd>{essenGesamt}</dd>
             </div>
             <div className="orga-wert">
-              <dt>bezahlt :</dt>
+              <dt>davon Erw. / Kinder :</dt>
+              <dd>
+                {essenErwachsen} / {essenKind}
+              </dd>
+            </div>
+            <div className="orga-wert">
+              <dt>Bezahlung erhalten :</dt>
               <dd>
                 {essenGesamt === 0 ? (
                   "–"
                 ) : essenOffen === 0 ? (
                   <span className="orga-wert--gut">✓</span>
                 ) : (
-                  <span className="orga-wert--fehlt">
+                  <button
+                    type="button"
+                    className="orga-wert--fehlt orga-wert__knopf"
+                    title="Offene Einträge in der Liste zeigen"
+                    onClick={zeigeOffeneEssen}
+                  >
                     {essenOffen} {essenOffen === 1 ? "fehlt" : "fehlen"} …!
-                  </span>
+                  </button>
                 )}
               </dd>
             </div>
@@ -282,7 +299,12 @@ export function Teilnehmer() {
                 </thead>
                 <tbody>
                   {essenListe.map((eintrag, index) => (
-                    <tr key={eintrag.id}>
+                    <tr
+                      key={eintrag.id}
+                      className={
+                        hebeOffeneHervor && !eintrag.bezahlt ? "zeile-hervorheben" : undefined
+                      }
+                    >
                       <td className="spalte-nr">{index + 1}</td>
                       <td>
                         <TextZelle
