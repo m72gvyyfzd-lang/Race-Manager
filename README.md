@@ -49,6 +49,27 @@ deployment → Source* auf **"GitHub Actions"** stellen.
   Wettfahrts- und Gesamtwertung. Die Tests nutzen die echten Zahlen aus dem
   Excel-Tool der Helgoland Double 2025 als Abnahme-Fixtures.
 
+## Zugangswort
+
+Beim ersten Öffnen fragt die App auf jedem Gerät nach einem Zugangswort
+und schaltet sich danach dauerhaft frei.
+
+**Das ist ein Sichtschutz, kein echter Schutz:** Die Prüfung läuft im
+Browser, der Vergleichs-Hash steckt im ausgelieferten JavaScript. Das
+hält Zufallsbesucher ab, lässt sich aber mit etwas Wissen umgehen — die
+Regattadaten liegen ohnehin lokal im Browser des jeweiligen Geräts. Für
+echte Vertraulichkeit bräuchte es einen Server, der die Daten erst nach
+Anmeldung herausgibt.
+
+Zugangswort ändern:
+
+```
+npm run passwort -w web -- "neues Zugangswort"
+```
+
+Danach committen und pushen — mit dem nächsten Deploy gilt das neue Wort,
+und alle Geräte fragen einmalig erneut.
+
 ## Entwicklung
 
 ```

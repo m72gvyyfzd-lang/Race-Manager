@@ -16,10 +16,8 @@ export function Einstellungen() {
       <PrintKopf regatta={regatta} seitentitel="Einstellungen" />
 
       <div className="einstellungen-grid">
-        <section className="kachel">
-          <div className="kachel__kopf">
-            <h2>Regatta bearbeiten</h2>
-          </div>
+        <section className="kachel kachel--legende">
+          <h2 className="kachel__legende">Regatta bearbeiten</h2>
 
           <div className="neue-regatta__ebene1">
             <input
@@ -97,10 +95,8 @@ export function Einstellungen() {
           </div>
         </section>
 
-        <section className="kachel">
-          <div className="kachel__kopf">
-            <h2>Startmodus</h2>
-          </div>
+        <section className="kachel kachel--legende">
+          <h2 className="kachel__legende">Startmodus</h2>
           <label className="radio-label">
             <input
               type="radio"
@@ -127,10 +123,8 @@ export function Einstellungen() {
           </label>
         </section>
 
-        <section className="kachel">
-          <div className="kachel__kopf">
-            <h2>Gesamtwertung</h2>
-          </div>
+        <section className="kachel kachel--legende">
+          <h2 className="kachel__legende">Gesamtwertung</h2>
           <label className="einstellungen-streicher">
             Streichergebnisse
             <input

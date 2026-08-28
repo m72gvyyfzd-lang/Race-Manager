@@ -83,10 +83,8 @@ export function Regatten() {
       <h1 className="titel-zentriert">Regatta Management</h1>
 
       <div className="kachel-grid no-print">
-        <section className="kachel">
-          <div className="kachel__kopf">
-            <h2>Neue Regatta</h2>
-          </div>
+        <section className="kachel kachel--legende">
+          <h2 className="kachel__legende">Neue Regatta</h2>
 
           <div className="neue-regatta__ebene1">
             <input
@@ -173,10 +171,8 @@ export function Regatten() {
           </div>
         </section>
 
-        <section className="kachel">
-          <div className="kachel__kopf">
-            <h2>Import / Export</h2>
-          </div>
+        <section className="kachel kachel--legende">
+          <h2 className="kachel__legende">Import / Export</h2>
           <p className="hinweis">
             Regatten als JSON-Datei sichern und auf einem anderen Gerät mit derselben App
             wieder importieren. Einzelne Regatten exportierst du direkt an ihrer Karte unten.

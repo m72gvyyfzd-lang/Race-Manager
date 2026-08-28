@@ -78,7 +78,7 @@ export function Teilnehmer() {
       <PrintKopf regatta={aktiveRegatta} seitentitel="Teilnehmer & Orga" />
 
       <div className="orga-dashboard no-print">
-        <section className="kachel orga-kachel">
+        <section className="kachel kachel--legende orga-kachel">
           <h2 className="kachel__legende">Racing…</h2>
           <dl className="orga-werte">
             <div className="orga-wert">
@@ -105,7 +105,7 @@ export function Teilnehmer() {
             </div>
           </dl>
         </section>
-        <section className="kachel orga-kachel">
+        <section className="kachel kachel--legende orga-kachel">
           <h2 className="kachel__legende">Party…</h2>
           <dl className="orga-werte">
             <div className="orga-wert">

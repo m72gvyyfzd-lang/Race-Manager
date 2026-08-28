@@ -2,15 +2,18 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
+import { Zugangssperre } from "./components/Zugangssperre.tsx";
 import { DataProvider } from "./state/DataContext.tsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
-      <DataProvider>
-        <App />
-      </DataProvider>
-    </BrowserRouter>
+    <Zugangssperre>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <DataProvider>
+          <App />
+        </DataProvider>
+      </BrowserRouter>
+    </Zugangssperre>
   </StrictMode>,
 );
