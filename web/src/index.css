@@ -1033,8 +1033,8 @@ span.druck-kopf__symbol {
 }
 
 /* Jede Zeile dezent gerahmt über die volle Kachelbreite. Zwei feste
-   Spalten sorgen dafür, dass die Doppelpunkte und die Werte über alle
-   Zeilen hinweg untereinander fluchten. */
+   Spalten: Beschriftung linksbündig, Wert mittig in einer eigenen
+   Spalte — so stehen die Werte über alle Zeilen hinweg untereinander. */
 .orga-wert {
   display: grid;
   grid-template-columns: 1fr 6.5rem;
@@ -1048,12 +1048,12 @@ span.druck-kopf__symbol {
 
 .orga-wert dt {
   opacity: 0.8;
-  text-align: right;
+  text-align: left;
 }
 
 .orga-wert dd {
   margin: 0;
-  text-align: right;
+  text-align: center;
   font-weight: 600;
   color: var(--text-h);
   white-space: nowrap;

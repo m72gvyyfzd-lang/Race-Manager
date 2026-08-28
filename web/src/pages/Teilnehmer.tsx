@@ -82,15 +82,15 @@ export function Teilnehmer() {
           <h2 className="kachel__legende">Racing…</h2>
           <dl className="orga-werte">
             <div className="orga-wert">
-              <dt>angemeldete Boote :</dt>
+              <dt>angemeldete Boote</dt>
               <dd>{boote.length}</dd>
             </div>
             <div className="orga-wert">
-              <dt>checked in :</dt>
+              <dt>checked in</dt>
               <dd>{meldungen}</dd>
             </div>
             <div className="orga-wert">
-              <dt>Meldegelder erhalten :</dt>
+              <dt>Meldegelder erhalten</dt>
               <dd>
                 {boote.length === 0 ? (
                   "–"
@@ -109,17 +109,17 @@ export function Teilnehmer() {
           <h2 className="kachel__legende">Party…</h2>
           <dl className="orga-werte">
             <div className="orga-wert">
-              <dt>Essen gesamt :</dt>
+              <dt>Essen gesamt</dt>
               <dd>{essenGesamt}</dd>
             </div>
             <div className="orga-wert">
-              <dt>davon Erw. / Kinder :</dt>
+              <dt>davon Erw. / Kinder</dt>
               <dd>
                 {essenErwachsen} / {essenKind}
               </dd>
             </div>
             <div className="orga-wert">
-              <dt>Bezahlung erhalten :</dt>
+              <dt>Bezahlung erhalten</dt>
               <dd>
                 {essenGesamt === 0 ? (
                   "–"
