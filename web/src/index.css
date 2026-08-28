@@ -980,14 +980,10 @@ span.druck-kopf__symbol {
 .orga-dashboard {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 2rem;
   flex-wrap: wrap;
   margin-bottom: 1.25rem;
-}
-
-.orga-dashboard .stat-grid {
-  margin: 0;
 }
 
 .orga-kachel {

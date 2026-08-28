@@ -46,8 +46,8 @@ export function Teilnehmer() {
   const essenErwachsen = essenListe.reduce((sum, e) => sum + e.essenErwachsen, 0);
   const essenKind = essenListe.reduce((sum, e) => sum + e.essenKind, 0);
   const essenGesamt = essenErwachsen + essenKind;
-  const essenBezahlt = essenListe
-    .filter((e) => e.bezahlt)
+  const essenOffen = essenListe
+    .filter((e) => !e.bezahlt)
     .reduce((sum, e) => sum + e.essenErwachsen + e.essenKind, 0);
 
   const feld = (boot: Boot, key: "name" | "skipper" | "crew") => (
@@ -92,22 +92,39 @@ export function Teilnehmer() {
             </div>
           </dl>
         </section>
-        <dl className="stat-grid">
-          <div className="stat-grid__item">
-            <dt>Essen: Erwachsene</dt>
-            <dd>{essenErwachsen}</dd>
+        <section className="kachel orga-kachel">
+          <div className="kachel__kopf">
+            <h2>Essen…</h2>
           </div>
-          <div className="stat-grid__item">
-            <dt>Essen: Kinder</dt>
-            <dd>{essenKind}</dd>
-          </div>
-          <div className="stat-grid__item">
-            <dt>Essen: bezahlt</dt>
-            <dd>
-              {essenBezahlt} / {essenGesamt}
-            </dd>
-          </div>
-        </dl>
+          <dl className="orga-werte">
+            <div className="orga-wert">
+              <dt>Erwachsene :</dt>
+              <dd>{essenErwachsen}</dd>
+            </div>
+            <div className="orga-wert">
+              <dt>Kinder :</dt>
+              <dd>{essenKind}</dd>
+            </div>
+            <div className="orga-wert">
+              <dt>Essen gesamt :</dt>
+              <dd>{essenGesamt}</dd>
+            </div>
+            <div className="orga-wert">
+              <dt>bezahlt :</dt>
+              <dd>
+                {essenGesamt === 0 ? (
+                  "–"
+                ) : essenOffen === 0 ? (
+                  <span className="orga-wert--gut">✓</span>
+                ) : (
+                  <span className="orga-wert--fehlt">
+                    {essenOffen} {essenOffen === 1 ? "fehlt" : "fehlen"} …!
+                  </span>
+                )}
+              </dd>
+            </div>
+          </dl>
+        </section>
       </div>
 
       <div className="karteireiter no-print" role="tablist">
