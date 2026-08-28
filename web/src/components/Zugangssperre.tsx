@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
+import { veranstalterLogoUrl } from "../data/logos";
 import { pruefeZugang, zugangGemerkt } from "../lib/zugang";
-import icon from "../assets/logos/regatta-helgoland-double.jpg";
+import { useData } from "../state/DataContext";
 
 /**
  * Fragt beim ersten Öffnen auf einem Gerät nach dem Zugangswort und gibt
@@ -8,12 +9,18 @@ import icon from "../assets/logos/regatta-helgoland-double.jpg";
  * Schutzes).
  */
 export function Zugangssperre({ children }: { children: ReactNode }) {
+  const { aktiveRegatta } = useData();
   const [frei, setFrei] = useState(zugangGemerkt);
   const [eingabe, setEingabe] = useState("");
   const [fehler, setFehler] = useState(false);
   const [pruefe, setPruefe] = useState(false);
 
   if (frei) return <>{children}</>;
+
+  // Veranstalterlogo der aktiven Regatta, sonst das App-Icon
+  const logo =
+    veranstalterLogoUrl(aktiveRegatta?.veranstalterLogo) ??
+    `${import.meta.env.BASE_URL}icons/icon-192.png`;
 
   const absenden = async (e: FormEvent) => {
     e.preventDefault();
@@ -33,7 +40,7 @@ export function Zugangssperre({ children }: { children: ReactNode }) {
     <div className="sperre">
       <form className="kachel kachel--legende sperre__karte" onSubmit={absenden}>
         <h2 className="kachel__legende">Race Manager</h2>
-        <img className="sperre__logo" src={icon} alt="" />
+        <img className="sperre__logo" src={logo} alt="" />
         <label className="sperre__feld">
           <span className="form-label">Zugangswort</span>
           <input

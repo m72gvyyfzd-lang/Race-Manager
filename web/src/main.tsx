@@ -8,12 +8,14 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Zugangssperre>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <DataProvider>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      {/* Die Sperre liegt innerhalb des Providers, damit der Anmeldeschirm
+          das Veranstalterlogo der aktiven Regatta zeigen kann. */}
+      <DataProvider>
+        <Zugangssperre>
           <App />
-        </DataProvider>
-      </BrowserRouter>
-    </Zugangssperre>
+        </Zugangssperre>
+      </DataProvider>
+    </BrowserRouter>
   </StrictMode>,
 );

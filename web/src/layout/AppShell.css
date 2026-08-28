@@ -39,7 +39,7 @@
 .app-sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 1.1rem;
 }
 
 .nav-tile {
@@ -54,16 +54,29 @@
   text-decoration: none;
   text-align: center;
   border: 2px solid transparent;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 5px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
 .nav-tile:hover {
   background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
 }
 
+/* Aktive Kachel tritt hervor und leuchtet dezent */
 .nav-tile.is-active {
   background: rgba(255, 255, 255, 0.22);
   border-color: rgba(255, 255, 255, 0.7);
   color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 0 14px rgba(126, 200, 232, 0.55),
+    0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .nav-tile__symbol {
