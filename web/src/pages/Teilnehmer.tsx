@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Boot } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
 import { PrintKopf } from "../components/PrintKopf";
+import { drucken } from "../lib/drucken";
 import { useData } from "../state/DataContext";
 
 function TextZelle({
@@ -41,7 +42,7 @@ export function Teilnehmer() {
   const essenListe = aktiveRegatta.essenAnmeldungen ?? [];
 
   const meldungen = boote.filter((b) => b.meldungErhalten).length;
-  const meldungenBezahlt = boote.filter((b) => b.meldegeldBezahlt).length;
+  const meldegeldFehlt = boote.filter((b) => !b.meldegeldBezahlt).length;
   const essenErwachsen = essenListe.reduce((sum, e) => sum + e.essenErwachsen, 0);
   const essenKind = essenListe.reduce((sum, e) => sum + e.essenKind, 0);
   const essenGesamt = essenErwachsen + essenKind;
@@ -62,17 +63,35 @@ export function Teilnehmer() {
       />
 
       <div className="orga-dashboard no-print">
-        <dl className="stat-grid">
-          <div className="stat-grid__item">
-            <dt>Regatta: Meldungen</dt>
-            <dd>{meldungen}</dd>
-            <div className="stat-grid__zusatz">davon bezahlt: {meldungenBezahlt}</div>
+        <section className="kachel orga-kachel">
+          <div className="kachel__kopf">
+            <h2>Racing…</h2>
           </div>
-          <div className="stat-grid__item">
-            <dt>Regatta: Boote</dt>
-            <dd>{boote.length}</dd>
-          </div>
-        </dl>
+          <dl className="orga-werte">
+            <div className="orga-wert">
+              <dt>angemeldete Boote :</dt>
+              <dd>{boote.length}</dd>
+            </div>
+            <div className="orga-wert">
+              <dt>checked in :</dt>
+              <dd>{meldungen}</dd>
+            </div>
+            <div className="orga-wert">
+              <dt>Meldegelder erhalten :</dt>
+              <dd>
+                {boote.length === 0 ? (
+                  "–"
+                ) : meldegeldFehlt === 0 ? (
+                  <span className="orga-wert--gut">✓</span>
+                ) : (
+                  <span className="orga-wert--fehlt">
+                    {meldegeldFehlt} {meldegeldFehlt === 1 ? "fehlt" : "fehlen"} …!
+                  </span>
+                )}
+              </dd>
+            </div>
+          </dl>
+        </section>
         <dl className="stat-grid">
           <div className="stat-grid__item">
             <dt>Essen: Erwachsene</dt>
@@ -104,6 +123,26 @@ export function Teilnehmer() {
             {t.label}
           </button>
         ))}
+        <div className="karteireiter__aktionen">
+          <button
+            type="button"
+            className="primary"
+            onClick={tab === "regatta" ? addBoot : addEssen}
+          >
+            {tab === "regatta" ? "+ Boot hinzufügen" : "+ Essen hinzufügen"}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              drucken(
+                `${tab === "regatta" ? "Anmeldung Regatta" : "Anmeldung Essen"} ${aktiveRegatta.name} ${aktiveRegatta.jahr}`,
+                "quer",
+              )
+            }
+          >
+            Drucken / PDF
+          </button>
+        </div>
       </div>
 
       <div className="karteikarte">
@@ -208,14 +247,6 @@ export function Teilnehmer() {
                 </tbody>
               </table>
             </div>
-            <div className="button-row no-print">
-              <button type="button" className="primary" onClick={addBoot}>
-                + Boot hinzufügen
-              </button>
-              <button type="button" onClick={() => window.print()}>
-                Drucken / PDF
-              </button>
-            </div>
           </>
         ) : (
           <>
@@ -304,14 +335,6 @@ export function Teilnehmer() {
                   ))}
                 </tbody>
               </table>
-            </div>
-            <div className="button-row no-print">
-              <button type="button" className="primary" onClick={addEssen}>
-                + Essen-Anmeldung
-              </button>
-              <button type="button" onClick={() => window.print()}>
-                Drucken / PDF
-              </button>
             </div>
           </>
         )}

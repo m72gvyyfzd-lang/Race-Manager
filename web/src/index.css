@@ -688,10 +688,16 @@ span.druck-kopf__symbol {
   margin: 1rem 0 0;
 }
 
-/* Druck-Button auf Höhe der Reiter, rechts außen */
-.karteireiter__druck {
+/* Aktionen auf Höhe der Reiter, rechts außen */
+.karteireiter__druck,
+.karteireiter__aktionen {
   margin-left: auto;
   margin-bottom: 0.25rem;
+}
+
+.karteireiter__aktionen {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .karteireiter__tab {
@@ -977,10 +983,57 @@ span.druck-kopf__symbol {
   align-items: flex-start;
   gap: 2rem;
   flex-wrap: wrap;
+  margin-bottom: 1.25rem;
 }
 
 .orga-dashboard .stat-grid {
-  margin: 0 0 1.25rem;
+  margin: 0;
+}
+
+.orga-kachel {
+  flex: 0 1 33%;
+  min-width: 17rem;
+  gap: 0.6rem;
+}
+
+.orga-werte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+/* Beschriftung links, Wert rechts — jede Zeile dezent gerahmt über die
+   volle Breite der Kachel. */
+.orga-wert {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.orga-wert dt {
+  opacity: 0.8;
+}
+
+.orga-wert dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.orga-wert--gut {
+  color: #1a8a3a;
+  font-size: 1.1rem;
+}
+
+.orga-wert--fehlt {
+  color: var(--gefahr);
 }
 
 /* --- Druck --- */
