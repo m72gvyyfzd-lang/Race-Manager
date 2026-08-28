@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Boot } from "@race-manager/core";
 import { KeineRegatta } from "../components/KeineRegatta";
+import { ListenTitel } from "../components/ListenTitel";
 import { PrintKopf } from "../components/PrintKopf";
 import { drucken } from "../lib/drucken";
 import { useData } from "../state/DataContext";
@@ -74,11 +75,7 @@ export function Teilnehmer() {
 
   return (
     <div>
-      <PrintKopf
-        regatta={aktiveRegatta}
-        seitentitel="Teilnehmer & Orga"
-        titel={tab === "regatta" ? "Anmeldung Regatta" : "Anmeldung Essen"}
-      />
+      <PrintKopf regatta={aktiveRegatta} seitentitel="Teilnehmer & Orga" />
 
       <div className="orga-dashboard no-print">
         <section className="kachel orga-kachel">
@@ -143,6 +140,11 @@ export function Teilnehmer() {
           </dl>
         </section>
       </div>
+
+      <ListenTitel
+        className="listen-titel"
+        titel={tab === "regatta" ? "Anmeldung Regatta" : "Anmeldung Essen"}
+      />
 
       <div className="karteireiter no-print" role="tablist">
         {TABS.map((t) => (

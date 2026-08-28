@@ -662,6 +662,12 @@ span.druck-kopf__symbol {
   white-space: nowrap;
 }
 
+/* Listentitel außerhalb des Kopfs (Teilnehmer & Orga: über der Liste) */
+.listen-titel {
+  padding-top: 0;
+  margin-bottom: 0.35rem;
+}
+
 .druck-kopf__titel {
   font-weight: 600;
   color: var(--text-h);

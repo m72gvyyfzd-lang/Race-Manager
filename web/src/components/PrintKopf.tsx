@@ -1,12 +1,12 @@
 import type { Regatta } from "@race-manager/core";
+import { ListenTitel } from "./ListenTitel";
 import { RegattaBanner } from "./RegattaBanner";
 
 /**
  * Standard-Seitenkopf: Banner mit Veranstalterlogo, "Regatta - Jahr" und
  * Regatta-Logo, darunter der Seitentitel — beides über der Trennlinie.
- * Unter der Linie steht zentriert der Listentitel; beim Ausdruck kommt
- * rechts der Druckzeitpunkt dazu, damit erkennbar bleibt, welcher Stand
- * auf dem Papier ist.
+ * Unter der Linie steht der Listentitel; Seiten, die ihn weiter unten
+ * zeigen (siehe ListenTitel), lassen `titel` einfach weg.
  */
 export function PrintKopf({
   regatta,
@@ -27,18 +27,7 @@ export function PrintKopf({
             Papier steht stattdessen der Listentitel unter der Linie. */}
         {seitentitel && <h1 className="druck-kopf__seitentitel no-print">{seitentitel}</h1>}
       </div>
-      {titel && (
-        <div className="druck-kopf__zeile">
-          <span className="druck-kopf__titel">
-            {titel}
-            {untertitel && <span className="druck-kopf__untertitel"> — {untertitel}</span>}
-          </span>
-          <span className="druck-kopf__stand print-only">
-            Stand:{" "}
-            {new Date().toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" })}
-          </span>
-        </div>
-      )}
+      {titel && <ListenTitel titel={titel} untertitel={untertitel} />}
     </header>
   );
 }
